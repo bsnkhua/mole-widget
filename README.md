@@ -54,10 +54,12 @@ open "dist/Mole Widget.app"   # or move it to /Applications
 ## Update
 
 ```bash
-brew update && brew upgrade mole-widget
+brew update && brew upgrade mole-widget && (pkill -f "Mole Widget.app"; sleep 1; mole-widget)
 ```
 
-(`brew update` first — third-party taps refresh only during a full update.)
+(`brew update` first — third-party taps refresh only during a full update.
+The trailing part restarts the widget: brew replaces the files on disk, but
+the old version keeps running until relaunched.)
 
 The widget itself checks GitHub for new releases every 6 hours: when one is
 available, an update icon appears next to the lock (click to copy the command

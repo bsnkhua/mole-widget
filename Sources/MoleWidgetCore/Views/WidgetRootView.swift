@@ -123,13 +123,18 @@ public struct WidgetRootView: View {
 
     @State private var upgradeCommandCopied = false
 
+    /// Full upgrade one-liner: refresh taps, upgrade, then restart the widget
+    /// so the new version actually runs (brew leaves the old process alive).
+    static let upgradeCommand =
+        #"brew update && brew upgrade mole-widget && (pkill -f "Mole Widget.app"; sleep 1; mole-widget)"#
+
     /// Appears next to the lock only when GitHub has a newer release.
-    /// Click copies the brew upgrade command to the clipboard.
+    /// Click copies the full upgrade command to the clipboard.
     private func updateButton(version: String) -> some View {
         Button {
             let pasteboard = NSPasteboard.general
             pasteboard.clearContents()
-            pasteboard.setString("brew update && brew upgrade mole-widget", forType: .string)
+            pasteboard.setString(Self.upgradeCommand, forType: .string)
             upgradeCommandCopied = true
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                 upgradeCommandCopied = false
@@ -143,8 +148,8 @@ public struct WidgetRootView: View {
         }
         .buttonStyle(.plain)
         .help(upgradeCommandCopied
-            ? "Copied! Paste it into Terminal"
-            : "\(version) is available — click to copy \"brew update && brew upgrade mole-widget\"")
+            ? "Copied! Paste it into Terminal — it upgrades and restarts the widget"
+            : "\(version) is available — click to copy the upgrade command")
     }
 
     // MARK: - Section factory
