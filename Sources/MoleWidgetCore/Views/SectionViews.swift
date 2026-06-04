@@ -175,3 +175,38 @@ public struct PowerSectionView: View {
         return parts.isEmpty ? nil : parts.joined(separator: " · ")
     }
 }
+
+public struct ProcessesSectionView: View {
+    let processes: [ProcessUsage]
+
+    public init(processes: [ProcessUsage]) {
+        self.processes = processes
+    }
+
+    public var body: some View {
+        SectionView(icon: "≡", title: "Processes") {
+            if processes.isEmpty {
+                Text("No data").foregroundStyle(Theme.dim)
+            } else {
+                ForEach(processes.prefix(3), id: \.name) { p in
+                    TextRow(
+                        label: truncated(p.name),
+                        value: valueString(p)
+                    )
+                }
+            }
+        }
+    }
+
+    /// Truncates a process name to at most 10 characters, appending "…" if longer.
+    private func truncated(_ name: String) -> String {
+        guard name.count > 10 else { return name }
+        return String(name.prefix(10)) + "…"
+    }
+
+    private func valueString(_ p: ProcessUsage) -> String {
+        let cpuPct = String(format: "%.0f%%", p.cpuFraction * 100)
+        let memGb = String(format: "%.1fG", Double(p.memoryBytes) / 1_073_741_824.0)
+        return "\(cpuPct) · \(memGb)"
+    }
+}

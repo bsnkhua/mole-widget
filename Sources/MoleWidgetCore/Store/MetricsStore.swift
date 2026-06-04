@@ -13,16 +13,19 @@ public final class MetricsStore {
     public private(set) var power: PowerSnapshot?
     public private(set) var netRates: NetIORates?
     public private(set) var networkInfo: NetworkInfo?
+    public private(set) var topProcesses: [ProcessUsage] = []
 
     @ObservationIgnored private let cpuCollector = CPUCollector()
     @ObservationIgnored private let memoryCollector = MemoryCollector()
     @ObservationIgnored private let diskCollector = DiskCollector()
     @ObservationIgnored private let powerCollector = PowerCollector()
     @ObservationIgnored private let networkCollector = NetworkCollector()
+    @ObservationIgnored private let processCollector = ProcessCollector()
 
     @ObservationIgnored private var previousCPU: CPUSample?
     @ObservationIgnored private var previousIO: (counters: DiskIOCounters, at: Date)?
     @ObservationIgnored private var previousNetIO: (counters: NetIOCounters, at: Date)?
+    @ObservationIgnored private var previousProcs: (samples: [ProcSample], at: Date)?
     @ObservationIgnored private var timers: [Timer] = []
 
     public init() {}
@@ -95,6 +98,20 @@ public final class MetricsStore {
             previousNetIO = (counters, now)
         } else {
             previousNetIO = nil // getifaddrs failure → next sample pair starts fresh
+        }
+        let procSamples = processCollector.sample()
+        if !procSamples.isEmpty {
+            let now = Date()
+            if let prev = previousProcs {
+                topProcesses = ProcessMath.top(
+                    previous: prev.samples,
+                    current: procSamples,
+                    interval: now.timeIntervalSince(prev.at)
+                )
+            }
+            previousProcs = (procSamples, now)
+        } else {
+            previousProcs = nil // collection failure → next sample pair starts fresh
         }
     }
 

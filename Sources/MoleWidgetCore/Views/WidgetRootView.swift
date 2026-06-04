@@ -38,8 +38,8 @@ public struct WidgetRootView: View {
             GridRow {
                 NetworkSectionView(rates: store.netRates, info: store.networkInfo)
                     .frame(width: columnWidth, alignment: .topLeading)
-                Color.clear
-                    .frame(width: columnWidth)
+                ProcessesSectionView(processes: store.topProcesses)
+                    .frame(width: columnWidth, alignment: .topLeading)
             }
         }
         .font(Theme.font)
