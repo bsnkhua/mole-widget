@@ -89,6 +89,37 @@ public struct DiskSectionView: View {
     }
 }
 
+public struct NetworkSectionView: View {
+    let rates: NetIORates?
+    let info: NetworkInfo?
+
+    public init(rates: NetIORates?, info: NetworkInfo?) {
+        self.rates = rates
+        self.info = info
+    }
+
+    public var body: some View {
+        SectionView(icon: "⇅", title: "Network") {
+            if rates == nil && info == nil {
+                Text("No data").foregroundStyle(Theme.dim)
+            } else {
+                if let r = rates {
+                    TextRow(label: "Down", value: Fmt.rate(r.download))
+                    TextRow(label: "Up", value: Fmt.rate(r.upload))
+                }
+                if let i = info {
+                    TextRow(label: "Iface", value: ifaceString(i))
+                }
+            }
+        }
+    }
+
+    private func ifaceString(_ i: NetworkInfo) -> String {
+        if let ip = i.localIP { return "\(i.interfaceName) · \(ip)" }
+        return i.interfaceName
+    }
+}
+
 public struct PowerSectionView: View {
     let snapshot: PowerSnapshot?
 

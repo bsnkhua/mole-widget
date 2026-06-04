@@ -11,14 +11,18 @@ public final class MetricsStore {
     public private(set) var diskUsage: DiskUsageSnapshot?
     public private(set) var diskIO: DiskIORates?
     public private(set) var power: PowerSnapshot?
+    public private(set) var netRates: NetIORates?
+    public private(set) var networkInfo: NetworkInfo?
 
     @ObservationIgnored private let cpuCollector = CPUCollector()
     @ObservationIgnored private let memoryCollector = MemoryCollector()
     @ObservationIgnored private let diskCollector = DiskCollector()
     @ObservationIgnored private let powerCollector = PowerCollector()
+    @ObservationIgnored private let networkCollector = NetworkCollector()
 
     @ObservationIgnored private var previousCPU: CPUSample?
     @ObservationIgnored private var previousIO: (counters: DiskIOCounters, at: Date)?
+    @ObservationIgnored private var previousNetIO: (counters: NetIOCounters, at: Date)?
     @ObservationIgnored private var timers: [Timer] = []
 
     public init() {}
@@ -32,6 +36,7 @@ public final class MetricsStore {
         refreshFast()
         refreshDiskUsage()
         refreshPower()
+        networkInfo = networkCollector.info()
         timers = [
             Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] _ in
                 Task { @MainActor in self?.refreshFast() }
@@ -78,6 +83,19 @@ public final class MetricsStore {
         } else {
             previousIO = nil // IOKit failure → next sample pair starts fresh
         }
+        if let counters = networkCollector.ioCounters() {
+            let now = Date()
+            if let prev = previousNetIO {
+                netRates = NetIO.rates(
+                    previous: prev.counters,
+                    current: counters,
+                    interval: now.timeIntervalSince(prev.at)
+                )
+            }
+            previousNetIO = (counters, now)
+        } else {
+            previousNetIO = nil // getifaddrs failure → next sample pair starts fresh
+        }
     }
 
     /// Disk usage — every 60 seconds (changes slowly).
@@ -87,8 +105,9 @@ public final class MetricsStore {
         }
     }
 
-    /// Battery — every 30 seconds. nil = "No data" (Mac without a battery).
+    /// Battery + network interface info — every 30 seconds.
     public func refreshPower() {
         power = powerCollector.sample()
+        networkInfo = networkCollector.info()
     }
 }

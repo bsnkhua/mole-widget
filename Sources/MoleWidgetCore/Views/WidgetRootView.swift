@@ -35,6 +35,12 @@ public struct WidgetRootView: View {
                 PowerSectionView(snapshot: store.power)
                     .frame(width: columnWidth, alignment: .topLeading)
             }
+            GridRow {
+                NetworkSectionView(rates: store.netRates, info: store.networkInfo)
+                    .frame(width: columnWidth, alignment: .topLeading)
+                Color.clear
+                    .frame(width: columnWidth)
+            }
         }
         .font(Theme.font)
         .padding(16)
