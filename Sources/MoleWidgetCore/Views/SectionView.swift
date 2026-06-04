@@ -70,13 +70,16 @@ struct MetricRow: View {
     }
 
     var body: some View {
+        // lineLimit(1) everywhere: a wrapped row changes the widget height
         HStack(spacing: 8) {
             Text(label)
                 .foregroundStyle(Theme.text)
+                .lineLimit(1)
                 .frame(width: 56, alignment: .leading)
             BarView(fraction: fraction, color: barColor)
             Text(value)
                 .foregroundStyle(Theme.text)
+                .lineLimit(1)
                 .frame(width: 56, alignment: .trailing)
         }
     }
@@ -91,9 +94,12 @@ struct TextRow: View {
         HStack(spacing: 8) {
             Text(label)
                 .foregroundStyle(Theme.text)
+                .lineLimit(1)
                 .frame(width: 56, alignment: .leading)
             Text(value)
                 .foregroundStyle(Theme.text)
+                .lineLimit(1)
+                .truncationMode(.tail)
             Spacer(minLength: 0)
         }
     }
@@ -110,10 +116,12 @@ struct SparkRow: View {
         HStack(spacing: 8) {
             Text(label)
                 .foregroundStyle(Theme.text)
+                .lineLimit(1)
                 .frame(width: 56, alignment: .leading)
             SparklineView(values: values, color: color)
             Text(value)
                 .foregroundStyle(Theme.text)
+                .lineLimit(1)
                 .fixedSize()
                 .frame(minWidth: 56, alignment: .trailing)
         }

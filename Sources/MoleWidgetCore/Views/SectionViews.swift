@@ -201,19 +201,23 @@ public struct ProcessesSectionView: View {
                 Text("No data").foregroundStyle(Theme.dim)
             } else {
                 ForEach(processes.prefix(3), id: \.pid) { p in
-                    TextRow(
-                        label: truncated(p.name),
-                        value: valueString(p)
-                    )
+                    // Process names vary wildly in length; give the name the
+                    // flexible space and let SwiftUI truncate with "…" —
+                    // a single line always, so the row height never jumps.
+                    HStack(spacing: 8) {
+                        Text(p.name)
+                            .foregroundStyle(Theme.text)
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+                        Spacer(minLength: 8)
+                        Text(valueString(p))
+                            .foregroundStyle(Theme.text)
+                            .lineLimit(1)
+                            .fixedSize()
+                    }
                 }
             }
         }
-    }
-
-    /// Truncates a process name to at most 10 characters, appending "…" if longer.
-    private func truncated(_ name: String) -> String {
-        guard name.count > 10 else { return name }
-        return String(name.prefix(10)) + "…"
     }
 
     private func valueString(_ p: ProcessUsage) -> String {
