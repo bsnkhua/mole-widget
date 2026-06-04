@@ -1,6 +1,9 @@
+import AppKit
 import SwiftUI
 
 /// Widget section: "● CPU ························" header + content.
+/// Clicking the header title opens Activity Monitor; the tap area is limited
+/// to the icon + title so window dragging from the rest of the section works.
 public struct SectionView<Content: View>: View {
     let icon: String
     let title: String
@@ -15,12 +18,22 @@ public struct SectionView<Content: View>: View {
     public var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack(spacing: 6) {
-                Text(icon).foregroundStyle(Theme.header)
-                Text(title).bold().foregroundStyle(Theme.header)
+                HStack(spacing: 6) {
+                    Text(icon).foregroundStyle(Theme.header)
+                    Text(title).bold().foregroundStyle(Theme.header)
+                }
+                .contentShape(Rectangle())
+                .onTapGesture { Self.openActivityMonitor() }
+                .help("Open Activity Monitor")
                 DottedLine()
             }
             content
         }
+    }
+
+    static func openActivityMonitor() {
+        let url = URL(fileURLWithPath: "/System/Applications/Utilities/Activity Monitor.app")
+        NSWorkspace.shared.openApplication(at: url, configuration: .init(), completionHandler: nil)
     }
 }
 
