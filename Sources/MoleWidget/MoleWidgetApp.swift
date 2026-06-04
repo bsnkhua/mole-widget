@@ -8,10 +8,49 @@ struct MoleWidgetApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @AppStorage(WidgetSettings.positionLockedKey) private var positionLocked = false
 
+    // Settings: opacity
+    @AppStorage(WidgetSettings.backgroundOpacityKey)
+    private var backgroundOpacity = WidgetSettings.defaultOpacity
+
+    // Settings: refresh rate
+    @AppStorage(WidgetSettings.refreshIntervalKey)
+    private var refreshInterval = WidgetSettings.defaultRefreshInterval
+
+    // Settings: section visibility
+    @AppStorage(WidgetSettings.showHeaderKey)    private var showHeader    = true
+    @AppStorage(WidgetSettings.showCPUKey)       private var showCPU       = true
+    @AppStorage(WidgetSettings.showMemoryKey)    private var showMemory    = true
+    @AppStorage(WidgetSettings.showDiskKey)      private var showDisk      = true
+    @AppStorage(WidgetSettings.showPowerKey)     private var showPower     = true
+    @AppStorage(WidgetSettings.showNetworkKey)   private var showNetwork   = true
+    @AppStorage(WidgetSettings.showProcessesKey) private var showProcesses = true
+
     var body: some Scene {
         MenuBarExtra("mole-widget", systemImage: "chart.bar.fill") {
             Toggle("Lock position", isOn: $positionLocked)
             LaunchAtLoginToggle()
+            Menu("Settings") {
+                Picker("Opacity", selection: $backgroundOpacity) {
+                    Text("100%").tag(1.0)
+                    Text("92%").tag(0.92)
+                    Text("85%").tag(0.85)
+                    Text("70%").tag(0.7)
+                }
+                Picker("Refresh rate", selection: $refreshInterval) {
+                    Text("1 s").tag(1.0)
+                    Text("2 s").tag(2.0)
+                    Text("5 s").tag(5.0)
+                }
+                Menu("Sections") {
+                    Toggle("Header",    isOn: $showHeader)
+                    Toggle("CPU",       isOn: $showCPU)
+                    Toggle("Memory",    isOn: $showMemory)
+                    Toggle("Disk",      isOn: $showDisk)
+                    Toggle("Power",     isOn: $showPower)
+                    Toggle("Network",   isOn: $showNetwork)
+                    Toggle("Processes", isOn: $showProcesses)
+                }
+            }
             Divider()
             Button("Quit mole-widget") {
                 NSApplication.shared.terminate(nil)
@@ -85,6 +124,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var window: DesktopWindow?
     private let store = MetricsStore()
 
+    /// Tracks the last refresh interval seen in UserDefaults so we can detect changes.
+    private var lastRefreshInterval: Double = UserDefaults.standard.object(
+        forKey: WidgetSettings.refreshIntervalKey
+    ) as? Double ?? WidgetSettings.defaultRefreshInterval
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory) // no Dock icon
 
@@ -130,26 +174,61 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         window.orderFrontRegardless()
         self.window = window
 
-        // The resize handle in WidgetRootView writes the new width to
-        // UserDefaults; resize the window to follow the SwiftUI content.
+        // UserDefaults changes drive two things:
+        // 1. Width/height sync so the window envelope tracks SwiftUI content size.
+        // 2. Refresh-rate restart when the user selects a new interval.
         NotificationCenter.default.addObserver(
             forName: UserDefaults.didChangeNotification,
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            MainActor.assumeIsolated { self?.syncWindowWidth() }
+            MainActor.assumeIsolated {
+                self?.syncWindowSize()
+                self?.restartStoreIfIntervalChanged()
+            }
         }
     }
 
-    private func syncWindowWidth() {
+    /// Synchronises the window frame to the SwiftUI content size.
+    /// Width follows the drag-resize handle; height follows section visibility changes.
+    /// Uses DispatchQueue.main.async so SwiftUI has already re-laid-out before we read
+    /// fittingSize.
+    private func syncWindowSize() {
         guard let window else { return }
+
+        // Width: driven by the drag-resize handle stored in UserDefaults.
         let stored = UserDefaults.standard.object(forKey: WidgetSettings.widgetWidthKey) as? Double
             ?? WidgetSettings.defaultWidth
         let targetWidth = WidgetSettings.clampWidth(stored)
-        guard abs(window.frame.width - targetWidth) > 0.5 else { return }
-        // Borderless window: frame size == content size; origin stays put,
-        // so the right edge follows the drag direction.
-        window.setContentSize(NSSize(width: targetWidth, height: window.frame.height))
+        let widthChanged = abs(window.frame.width - targetWidth) > 0.5
+
+        // Height: derived from SwiftUI fitting size after layout.
+        // We schedule async so the layout pass has completed before we measure.
+        DispatchQueue.main.async { [weak self] in
+            guard let self, let window = self.window else { return }
+            guard let contentView = window.contentView else { return }
+
+            let fittingHeight = contentView.fittingSize.height
+            let heightChanged = fittingHeight > 0 && abs(window.frame.height - fittingHeight) > 0.5
+
+            if widthChanged || heightChanged {
+                let newWidth  = widthChanged  ? targetWidth   : window.frame.width
+                let newHeight = heightChanged ? fittingHeight : window.frame.height
+                // Borderless window: frame size == content size; origin stays put.
+                window.setContentSize(NSSize(width: newWidth, height: newHeight))
+            }
+        }
+    }
+
+    /// Re-creates the fast timer when the user picks a different refresh interval.
+    /// MetricsStore.start() is idempotent (calls stop() first), so calling it again
+    /// is safe and picks up the new interval from UserDefaults.
+    private func restartStoreIfIntervalChanged() {
+        let current = UserDefaults.standard.object(forKey: WidgetSettings.refreshIntervalKey) as? Double
+            ?? WidgetSettings.defaultRefreshInterval
+        guard current != lastRefreshInterval else { return }
+        lastRefreshInterval = current
+        store.start()
     }
 
     func applicationWillTerminate(_ notification: Notification) {

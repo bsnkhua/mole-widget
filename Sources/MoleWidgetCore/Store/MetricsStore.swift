@@ -47,8 +47,14 @@ public final class MetricsStore {
         refreshPower()
         networkInfo = networkCollector.info()
         systemInfo = systemInfoCollector.sample()
+        // Read the fast-timer interval from user defaults; floor at 1 s.
+        let interval = max(
+            1.0,
+            UserDefaults.standard.object(forKey: WidgetSettings.refreshIntervalKey) as? Double
+                ?? WidgetSettings.defaultRefreshInterval
+        )
         timers = [
-            Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] _ in
+            Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
                 Task { @MainActor in self?.refreshFast() }
             },
             Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in

@@ -1,7 +1,18 @@
 import AppKit
 import SwiftUI
 
-/// Root widget view: a 2×2 grid of sections on a dark backdrop,
+// MARK: - Section identity
+
+/// Ordered list of section slots. The order is fixed; visibility flags select which
+/// slots appear in the grid. Using an enum makes ForEach ids stable and unique.
+enum WidgetSection: Int, CaseIterable, Identifiable {
+    case cpu, memory, disk, power, network, processes
+    var id: Int { rawValue }
+}
+
+// MARK: - WidgetRootView
+
+/// Root widget view: a dynamic grid of sections on a dark backdrop,
 /// a clickable lock icon in the top-right corner, and an invisible
 /// resize handle along the right edge (drag to adjust width).
 public struct WidgetRootView: View {
@@ -10,6 +21,19 @@ public struct WidgetRootView: View {
     @AppStorage(WidgetSettings.positionLockedKey) private var positionLocked = false
     @AppStorage(WidgetSettings.widgetWidthKey) private var widgetWidth = WidgetSettings.defaultWidth
 
+    // Appearance
+    @AppStorage(WidgetSettings.backgroundOpacityKey)
+    private var backgroundOpacity = WidgetSettings.defaultOpacity
+
+    // Section visibility
+    @AppStorage(WidgetSettings.showHeaderKey)    private var showHeader    = true
+    @AppStorage(WidgetSettings.showCPUKey)       private var showCPU       = true
+    @AppStorage(WidgetSettings.showMemoryKey)    private var showMemory    = true
+    @AppStorage(WidgetSettings.showDiskKey)      private var showDisk      = true
+    @AppStorage(WidgetSettings.showPowerKey)     private var showPower     = true
+    @AppStorage(WidgetSettings.showNetworkKey)   private var showNetwork   = true
+    @AppStorage(WidgetSettings.showProcessesKey) private var showProcesses = true
+
     @State private var dragStartWidth: Double?
 
     /// Two columns + inter-column spacing (24) + horizontal padding (2×16).
@@ -17,44 +41,67 @@ public struct WidgetRootView: View {
         (WidgetSettings.clampWidth(widgetWidth) - 24 - 32) / 2
     }
 
+    /// Ordered list of enabled section slots.
+    private var enabledSections: [WidgetSection] {
+        WidgetSection.allCases.filter { section in
+            switch section {
+            case .cpu:       return showCPU
+            case .memory:    return showMemory
+            case .disk:      return showDisk
+            case .power:     return showPower
+            case .network:   return showNetwork
+            case .processes: return showProcesses
+            }
+        }
+    }
+
     public init(store: MetricsStore) {
         self.store = store
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HeaderView(info: store.systemInfo, score: store.healthScore)
+        let allHidden = !showHeader && enabledSections.isEmpty
 
-            Grid(alignment: .topLeading, horizontalSpacing: 24, verticalSpacing: 16) {
-                GridRow {
-                    CPUSectionView(snapshot: store.cpu, history: store.cpuHistory.values)
-                        .frame(width: columnWidth, alignment: .topLeading)
-                    MemorySectionView(snapshot: store.memory)
-                        .frame(width: columnWidth, alignment: .topLeading)
+        VStack(alignment: .leading, spacing: 12) {
+            if allHidden {
+                Text("All sections hidden")
+                    .foregroundStyle(Theme.dim)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.vertical, 8)
+            } else {
+                if showHeader {
+                    HeaderView(info: store.systemInfo, score: store.healthScore)
                 }
-                GridRow {
-                    DiskSectionView(usage: store.diskUsage, io: store.diskIO)
-                        .frame(width: columnWidth, alignment: .topLeading)
-                    PowerSectionView(snapshot: store.power)
-                        .frame(width: columnWidth, alignment: .topLeading)
-                }
-                GridRow {
-                    NetworkSectionView(
-                        rates: store.netRates,
-                        info: store.networkInfo,
-                        downloadHistory: store.netInHistory.values,
-                        uploadHistory: store.netOutHistory.values
-                    )
-                    .frame(width: columnWidth, alignment: .topLeading)
-                    ProcessesSectionView(processes: store.topProcesses)
-                        .frame(width: columnWidth, alignment: .topLeading)
+
+                if !enabledSections.isEmpty {
+                    Grid(alignment: .topLeading, horizontalSpacing: 24, verticalSpacing: 16) {
+                        // Chunk the enabled sections into pairs; the odd tail sits alone.
+                        let pairs = enabledSections.chunks(of: 2)
+                        ForEach(pairs.indices, id: \.self) { rowIndex in
+                            GridRow {
+                                let pair = pairs[rowIndex]
+                                // Leading cell (always present)
+                                sectionView(for: pair[0])
+                                    .frame(width: columnWidth, alignment: .topLeading)
+                                // Trailing cell (present only in full pairs)
+                                if pair.count > 1 {
+                                    sectionView(for: pair[1])
+                                        .frame(width: columnWidth, alignment: .topLeading)
+                                } else {
+                                    // Empty spacer to keep the grid geometry consistent
+                                    Color.clear
+                                        .frame(width: columnWidth)
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
         .font(Theme.font)
         .padding(16)
         .background(
-            Theme.background.opacity(0.92),
+            Theme.background.opacity(WidgetSettings.clampOpacity(backgroundOpacity)),
             in: RoundedRectangle(cornerRadius: 12)
         )
         .overlay(alignment: .trailing) {
@@ -64,6 +111,33 @@ public struct WidgetRootView: View {
             lockButton
         }
     }
+
+    // MARK: - Section factory
+
+    @ViewBuilder
+    private func sectionView(for section: WidgetSection) -> some View {
+        switch section {
+        case .cpu:
+            CPUSectionView(snapshot: store.cpu, history: store.cpuHistory.values)
+        case .memory:
+            MemorySectionView(snapshot: store.memory)
+        case .disk:
+            DiskSectionView(usage: store.diskUsage, io: store.diskIO)
+        case .power:
+            PowerSectionView(snapshot: store.power)
+        case .network:
+            NetworkSectionView(
+                rates: store.netRates,
+                info: store.networkInfo,
+                downloadHistory: store.netInHistory.values,
+                uploadHistory: store.netOutHistory.values
+            )
+        case .processes:
+            ProcessesSectionView(processes: store.topProcesses)
+        }
+    }
+
+    // MARK: - Resize handle
 
     /// Invisible strip along the right edge; drag it to resize the widget.
     /// Disabled while the position is locked.
@@ -92,6 +166,8 @@ public struct WidgetRootView: View {
             )
     }
 
+    // MARK: - Lock button
+
     private var lockButton: some View {
         Button {
             positionLocked.toggle()
@@ -107,5 +183,17 @@ public struct WidgetRootView: View {
         .help(positionLocked
             ? "Position and size are locked — click to unlock"
             : "Click to lock the widget position and size")
+    }
+}
+
+// MARK: - Array chunking helper
+
+private extension Array {
+    /// Splits the array into sub-arrays of at most `size` elements.
+    func chunks(of size: Int) -> [[Element]] {
+        guard size > 0 else { return [] }
+        return stride(from: 0, to: count, by: size).map {
+            Array(self[$0 ..< Swift.min($0 + size, count)])
+        }
     }
 }
