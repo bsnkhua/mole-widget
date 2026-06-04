@@ -9,16 +9,20 @@ A native macOS desktop widget showing live system metrics in the terminal aesthe
 
 ## Features
 
-- **CPU** — total usage, top-3 busiest cores, load average (refreshes every 2 s)
-- **Memory** — used/free, total, cached, available (every 2 s)
-- **Disk** — root volume usage, read/write speed (I/O every 2 s, usage once a minute)
-- **Power** — charge level, battery health, status, cycle count, temperature (every 30 s)
+- **Header** — chip, RAM, macOS version, uptime and a composite health score (0–100)
+- **CPU** — total usage, top-3 busiest cores, load average, usage trend sparkline
+- **Memory** — used/free, total, cached, available
+- **Disk** — root volume usage, used/free space, read/write speed
+- **Power** — charge level, battery health, status, cycle count, temperature
+- **Network** — download/upload sparklines with rates, active interface and local IP
+- **Processes** — top-3 by CPU with memory footprint
+- Click any section title to open Activity Monitor
 - Visible on all Spaces, ignored by Mission Control and ⌘Tab, stays below regular windows
 - Drag it anywhere with the mouse; position is remembered across launches
 - Resizable: drag the right edge to adjust the width (490–880 pt), saved across launches
 - 🔒 Clickable lock icon on the widget (plus a "Lock position" menu item) pins both position and size
-- Launch at login toggle in the menu bar
-- Menu bar icon with Lock position, Launch at login and Quit; no Dock icon
+- Settings in the menu bar: background opacity, visible sections, refresh rate (1/2/5 s)
+- Launch at login toggle; no Dock icon
 
 ## Requirements
 
