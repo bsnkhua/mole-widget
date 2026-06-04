@@ -28,7 +28,7 @@ struct MoleWidgetApp: App {
     @AppStorage(WidgetSettings.showProcessesKey) private var showProcesses = true
 
     var body: some Scene {
-        MenuBarExtra("mole-widget", systemImage: "chart.bar.fill") {
+        MenuBarExtra("Mole Widget", systemImage: "chart.bar.fill") {
             Toggle("Lock position", isOn: $positionLocked)
             LaunchAtLoginToggle()
             Menu("Settings") {
@@ -53,8 +53,14 @@ struct MoleWidgetApp: App {
                     Toggle("Processes", isOn: $showProcesses)
                 }
             }
+            if let update = appDelegate.store.availableUpdate {
+                Divider()
+                Button("Update available: \(update) — open releases") {
+                    NSWorkspace.shared.open(UpdateChecker.releasesPageURL)
+                }
+            }
             Divider()
-            Button("Quit mole-widget") {
+            Button("Quit Mole Widget") {
                 NSApplication.shared.terminate(nil)
             }
             .keyboardShortcut("q")
@@ -124,7 +130,7 @@ final class DesktopWindow: NSWindow {
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var window: DesktopWindow?
-    private let store = MetricsStore()
+    let store = MetricsStore() // exposed so MenuBarExtra can show update state
 
     /// Tracks the last refresh interval seen in UserDefaults so we can detect changes.
     private var lastRefreshInterval: Double = UserDefaults.standard.object(

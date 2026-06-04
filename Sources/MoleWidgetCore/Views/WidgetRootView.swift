@@ -109,8 +109,42 @@ public struct WidgetRootView: View {
             resizeHandle
         }
         .overlay(alignment: .topTrailing) {
-            lockButton
+            HStack(spacing: 2) {
+                if let version = store.availableUpdate {
+                    updateButton(version: version)
+                }
+                lockButton
+            }
+            .padding(6)
         }
+    }
+
+    // MARK: - Update button
+
+    @State private var upgradeCommandCopied = false
+
+    /// Appears next to the lock only when GitHub has a newer release.
+    /// Click copies the brew upgrade command to the clipboard.
+    private func updateButton(version: String) -> some View {
+        Button {
+            let pasteboard = NSPasteboard.general
+            pasteboard.clearContents()
+            pasteboard.setString("brew upgrade mole-widget", forType: .string)
+            upgradeCommandCopied = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                upgradeCommandCopied = false
+            }
+        } label: {
+            Image(systemName: upgradeCommandCopied ? "checkmark.circle.fill" : "arrow.down.circle.fill")
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(upgradeCommandCopied ? Theme.accent : Theme.warning)
+                .frame(width: 20, height: 20)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .help(upgradeCommandCopied
+            ? "Copied! Paste it into Terminal"
+            : "\(version) is available — click to copy \"brew upgrade mole-widget\"")
     }
 
     // MARK: - Section factory
@@ -180,7 +214,6 @@ public struct WidgetRootView: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .padding(6)
         .help(positionLocked
             ? "Position and size are locked — click to unlock"
             : "Click to lock the widget position and size")

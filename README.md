@@ -1,6 +1,6 @@
-# mole-mac-widget
+# mole-widget
 
-[![CI](https://github.com/bsnkhua/mole-mac-widget/actions/workflows/ci.yml/badge.svg)](https://github.com/bsnkhua/mole-mac-widget/actions/workflows/ci.yml)
+[![CI](https://github.com/bsnkhua/mole-widget/actions/workflows/ci.yml/badge.svg)](https://github.com/bsnkhua/mole-widget/actions/workflows/ci.yml)
 
 A native macOS desktop widget showing live system metrics in the terminal aesthetic of the `mo status` CLI (mole): a borderless window living at desktop level — above the wallpaper, below application windows.
 
@@ -34,7 +34,7 @@ A native macOS desktop widget showing live system metrics in the terminal aesthe
 ### Homebrew
 
 ```bash
-brew install bsnkhua/tap/mole-mac-widget
+brew install bsnkhua/tap/mole-widget
 mole-widget   # launch the widget
 ```
 
@@ -42,7 +42,7 @@ The formula builds the widget from source on your machine (~30 s; needs only
 the Command Line Tools that Homebrew already requires). Because the app is
 built locally, Gatekeeper has no objections to the unsigned bundle.
 
-Quit it any time from the menu bar icon → **Quit mole-widget**.
+Quit it any time from the menu bar icon → **Quit Mole Widget**.
 
 ### From source
 
@@ -57,7 +57,7 @@ open "dist/Mole Widget.app"   # or move it to /Applications
 2. Remove the package:
 
 ```bash
-brew uninstall mole-mac-widget
+brew uninstall mole-widget
 ```
 
 3. Optional cleanup — remove the tap and the saved settings:
