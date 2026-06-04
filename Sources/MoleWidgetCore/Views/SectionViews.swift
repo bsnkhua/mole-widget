@@ -200,7 +200,7 @@ public struct ProcessesSectionView: View {
             if processes.isEmpty {
                 Text("No data").foregroundStyle(Theme.dim)
             } else {
-                ForEach(processes.prefix(3), id: \.name) { p in
+                ForEach(processes.prefix(3), id: \.pid) { p in
                     TextRow(
                         label: truncated(p.name),
                         value: valueString(p)

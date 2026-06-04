@@ -26,13 +26,7 @@ public enum ProcessMath {
 
         let intervalNs = interval * 1_000_000_000
 
-        // Intermediate tuple retains pid for tie-breaking sort.
-        struct Row {
-            let pid: Int32
-            let usage: ProcessUsage
-        }
-
-        var rows: [Row] = []
+        var rows: [ProcessUsage] = []
         rows.reserveCapacity(current.count)
 
         for sample in current {
@@ -40,25 +34,22 @@ public enum ProcessMath {
             let deltaNs = sample.cpuTimeNs >= prev.cpuTimeNs
                 ? sample.cpuTimeNs - prev.cpuTimeNs
                 : 0 // counter regressed — clamp to 0
-            let fraction = Double(deltaNs) / intervalNs
-            rows.append(Row(
+            rows.append(ProcessUsage(
                 pid: sample.pid,
-                usage: ProcessUsage(
-                    name: sample.name,
-                    cpuFraction: fraction,
-                    memoryBytes: sample.memoryBytes
-                )
+                name: sample.name,
+                cpuFraction: Double(deltaNs) / intervalNs,
+                memoryBytes: sample.memoryBytes
             ))
         }
 
         // Sort by cpuFraction desc; tie → lower pid first.
         let sorted = rows.sorted {
-            if $0.usage.cpuFraction != $1.usage.cpuFraction {
-                return $0.usage.cpuFraction > $1.usage.cpuFraction
+            if $0.cpuFraction != $1.cpuFraction {
+                return $0.cpuFraction > $1.cpuFraction
             }
             return $0.pid < $1.pid
         }
 
-        return sorted.prefix(count).map { $0.usage }
+        return Array(sorted.prefix(count))
     }
 }
