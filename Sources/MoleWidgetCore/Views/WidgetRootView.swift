@@ -129,7 +129,7 @@ public struct WidgetRootView: View {
         Button {
             let pasteboard = NSPasteboard.general
             pasteboard.clearContents()
-            pasteboard.setString("brew upgrade mole-widget", forType: .string)
+            pasteboard.setString("brew update && brew upgrade mole-widget", forType: .string)
             upgradeCommandCopied = true
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                 upgradeCommandCopied = false
@@ -144,7 +144,7 @@ public struct WidgetRootView: View {
         .buttonStyle(.plain)
         .help(upgradeCommandCopied
             ? "Copied! Paste it into Terminal"
-            : "\(version) is available — click to copy \"brew upgrade mole-widget\"")
+            : "\(version) is available — click to copy \"brew update && brew upgrade mole-widget\"")
     }
 
     // MARK: - Section factory
