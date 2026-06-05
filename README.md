@@ -1,8 +1,8 @@
-# mole-widget
+# Mole Widget
 
 [![CI](https://github.com/bsnkhua/mole-widget/actions/workflows/ci.yml/badge.svg)](https://github.com/bsnkhua/mole-widget/actions/workflows/ci.yml)
 
-A native macOS desktop widget showing live system metrics in the terminal aesthetic of the `mo status` CLI (mole): a borderless window living at desktop level — above the wallpaper, below application windows.
+**Mole Widget** is a lightweight macOS desktop system monitor widget: live CPU, memory, disk, network, battery and process metrics right on your desktop. Native Swift + SwiftUI in the terminal aesthetic of the `mo status` CLI (mole) — a borderless window living at desktop level, above the wallpaper and below application windows.
 
 <img src="assets/widget.webp" width="520" alt="Mole Widget on the desktop">
 
@@ -92,7 +92,7 @@ defaults delete com.sbezbabnykh.mole-widget
 
 ```bash
 make run    # run a dev build
-make test   # run the test suite (32 tests)
+make test   # run the test suite (79 tests)
 ```
 
 > **Important:** run tests only via `make test`. On a machine without full Xcode
