@@ -39,6 +39,7 @@ jobs:
           mkdir -p "$APP/Contents/Resources"
           cp Resources/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
           codesign --force --options runtime \
+            --min-os-version 14.0 \
             --sign "Developer ID Application: Serhii Bezbabnykh ($APPLE_TEAM_ID)" \
             "$APP"
 
