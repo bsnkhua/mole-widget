@@ -1,0 +1,74 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  release:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Import Developer ID certificate
+        env:
+          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+          MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+        run: |
+          echo "$MACOS_CERTIFICATE" | base64 --decode > /tmp/cert.p12
+          security create-keychain -p "" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "" build.keychain
+          security import /tmp/cert.p12 -k build.keychain -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain
+          rm /tmp/cert.p12
+
+      - name: Build release binary
+        run: swift build -c release --disable-sandbox
+
+      - name: Assemble and sign app bundle
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          APP="dist/Mole Widget.app"
+          mkdir -p "$APP/Contents/MacOS"
+          cp .build/release/MoleWidget "$APP/Contents/MacOS/MoleWidget"
+          cp Resources/Info.plist "$APP/Contents/Info.plist"
+          mkdir -p "$APP/Contents/Resources"
+          cp Resources/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
+          codesign --force --options runtime \
+            --sign "Developer ID Application: Serhii Bezbabnykh ($APPLE_TEAM_ID)" \
+            "$APP"
+
+      - name: Create DMG
+        run: |
+          mkdir -p dist/dmg_contents
+          cp -R "dist/Mole Widget.app" dist/dmg_contents/
+          ln -s /Applications dist/dmg_contents/Applications
+          hdiutil create \
+            -volname "Mole Widget" \
+            -srcfolder dist/dmg_contents \
+            -ov -format UDZO \
+            dist/MoleWidget.dmg
+
+      - name: Notarize DMG
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          xcrun notarytool submit dist/MoleWidget.dmg \
+            --apple-id "$APPLE_ID" \
+            --password "$APPLE_APP_PASSWORD" \
+            --team-id "$APPLE_TEAM_ID" \
+            --wait
+
+      - name: Staple notarization ticket
+        run: xcrun stapler staple dist/MoleWidget.dmg
+
+      - name: Upload DMG to GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG=${GITHUB_REF#refs/tags/}
+          gh release upload "$TAG" dist/MoleWidget.dmg --clobber
