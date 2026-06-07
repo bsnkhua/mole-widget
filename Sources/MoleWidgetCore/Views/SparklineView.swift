@@ -2,7 +2,7 @@ import SwiftUI
 
 /// A compact line graph that plots recent sample values as a single stroke.
 /// With 0 or 1 values the view renders nothing — it fills in within seconds.
-public struct SparklineView: View {
+public struct SparklineView: View, Equatable {
     let values: [Double]
     let color: Color
 

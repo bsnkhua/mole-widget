@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Horizontal progress bar: filled portion on a dimmed track.
-public struct BarView: View {
+public struct BarView: View, Equatable {
     let fraction: Double
     var color: Color?
 

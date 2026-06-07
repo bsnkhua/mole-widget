@@ -56,7 +56,7 @@ struct DottedLine: View {
 }
 
 /// Row with "label — bar — value" layout.
-struct MetricRow: View {
+struct MetricRow: View, Equatable {
     let label: String
     let fraction: Double
     let value: String
@@ -76,7 +76,7 @@ struct MetricRow: View {
                 .foregroundStyle(Theme.text)
                 .lineLimit(1)
                 .frame(width: 56, alignment: .leading)
-            BarView(fraction: fraction, color: barColor)
+            BarView(fraction: fraction, color: barColor).equatable()
             Text(value)
                 .foregroundStyle(Theme.text)
                 .lineLimit(1)
@@ -106,7 +106,7 @@ struct TextRow: View {
 }
 
 /// Row with a label, a sparkline of recent history, and a trailing value.
-struct SparkRow: View {
+struct SparkRow: View, Equatable {
     let label: String
     let values: [Double]
     let value: String
@@ -118,7 +118,7 @@ struct SparkRow: View {
                 .foregroundStyle(Theme.text)
                 .lineLimit(1)
                 .frame(width: 56, alignment: .leading)
-            SparklineView(values: values, color: color)
+            SparklineView(values: values, color: color).equatable()
             Text(value)
                 .foregroundStyle(Theme.text)
                 .lineLimit(1)

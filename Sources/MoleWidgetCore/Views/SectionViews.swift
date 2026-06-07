@@ -1,6 +1,6 @@
 import SwiftUI
 
-public struct CPUSectionView: View {
+public struct CPUSectionView: View, Equatable {
     let snapshot: CPUSnapshot?
     let history: [Double]
 
@@ -43,7 +43,7 @@ public struct CPUSectionView: View {
     }
 }
 
-public struct MemorySectionView: View {
+public struct MemorySectionView: View, Equatable {
     let snapshot: MemorySnapshot?
 
     public init(snapshot: MemorySnapshot?) {
@@ -70,7 +70,7 @@ public struct MemorySectionView: View {
     }
 }
 
-public struct DiskSectionView: View {
+public struct DiskSectionView: View, Equatable {
     let usage: DiskUsageSnapshot?
     let io: DiskIORates?
 
@@ -97,7 +97,7 @@ public struct DiskSectionView: View {
     }
 }
 
-public struct NetworkSectionView: View {
+public struct NetworkSectionView: View, Equatable {
     let rates: NetIORates?
     let info: NetworkInfo?
     let downloadHistory: [Double]
@@ -132,7 +132,7 @@ public struct NetworkSectionView: View {
     }
 }
 
-public struct PowerSectionView: View {
+public struct PowerSectionView: View, Equatable {
     let snapshot: PowerSnapshot?
 
     public init(snapshot: PowerSnapshot?) {
@@ -188,7 +188,7 @@ public struct PowerSectionView: View {
     }
 }
 
-public struct ProcessesSectionView: View {
+public struct ProcessesSectionView: View, Equatable {
     let processes: [ProcessUsage]
 
     public init(processes: [ProcessUsage]) {

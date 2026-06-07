@@ -32,6 +32,7 @@ public final class MetricsStore {
 
     @ObservationIgnored private let updateChecker = UpdateChecker()
 
+    @ObservationIgnored private var isSuspended = false
     @ObservationIgnored private var previousCPU: CPUSample?
     @ObservationIgnored private var previousIO: (counters: DiskIOCounters, at: Date)?
     @ObservationIgnored private var previousNetIO: (counters: NetIOCounters, at: Date)?
@@ -94,8 +95,22 @@ public final class MetricsStore {
         timers = []
     }
 
+    /// Pause fast polling while the widget is fully occluded by other windows.
+    public func suspend() {
+        isSuspended = true
+    }
+
+    /// Resume fast polling when the widget becomes visible again.
+    /// Immediately refreshes so data is current on first paint.
+    public func resume() {
+        guard isSuspended else { return }
+        isSuspended = false
+        refreshFast()
+    }
+
     /// CPU + Memory + Disk I/O — every 2 seconds.
     public func refreshFast() {
+        guard !isSuspended else { return }
         if let ticks = cpuCollector.sampleTicks() {
             if let prev = previousCPU {
                 cpu = CPUUsage.snapshot(

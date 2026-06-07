@@ -172,22 +172,22 @@ public struct WidgetRootView: View {
     private func sectionView(for section: WidgetSection) -> some View {
         switch section {
         case .cpu:
-            CPUSectionView(snapshot: store.cpu, history: store.cpuHistory.values)
+            CPUSectionView(snapshot: store.cpu, history: store.cpuHistory.values).equatable()
         case .memory:
-            MemorySectionView(snapshot: store.memory)
+            MemorySectionView(snapshot: store.memory).equatable()
         case .disk:
-            DiskSectionView(usage: store.diskUsage, io: store.diskIO)
+            DiskSectionView(usage: store.diskUsage, io: store.diskIO).equatable()
         case .power:
-            PowerSectionView(snapshot: store.power)
+            PowerSectionView(snapshot: store.power).equatable()
         case .network:
             NetworkSectionView(
                 rates: store.netRates,
                 info: store.networkInfo,
                 downloadHistory: store.netInHistory.values,
                 uploadHistory: store.netOutHistory.values
-            )
+            ).equatable()
         case .processes:
-            ProcessesSectionView(processes: store.topProcesses)
+            ProcessesSectionView(processes: store.topProcesses).equatable()
         }
     }
 

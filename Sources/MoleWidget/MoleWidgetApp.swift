@@ -213,6 +213,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         window.orderFrontRegardless()
         self.window = window
 
+        // Pause fast polling when the widget is fully hidden behind other windows.
+        NotificationCenter.default.addObserver(
+            forName: NSWindow.didChangeOcclusionStateNotification,
+            object: window,
+            queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                guard let self, let w = self.window else { return }
+                if w.occlusionState.contains(.visible) {
+                    self.store.resume()
+                } else {
+                    self.store.suspend()
+                }
+            }
+        }
+
         // Reconcile the stored width with the actual frame once at startup:
         // without this, a missing autosave entry (fresh install, cleared
         // defaults) would leave the window at fittingSize and ignore
