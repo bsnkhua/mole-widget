@@ -1,3 +1,5 @@
+import Foundation
+
 /// Shared widget settings (UserDefaults keys and bounds).
 public enum WidgetSettings {
     // MARK: - Position / size
@@ -41,4 +43,21 @@ public enum WidgetSettings {
     public static let showPowerKey     = "showPower"
     public static let showNetworkKey   = "showNetwork"
     public static let showProcessesKey = "showProcesses"
+
+    // MARK: - Desktop visibility
+
+    /// Whether the widget window is shown on the desktop. Hiding it keeps the
+    /// app and its menu bar icon running so the widget can be summoned again.
+    public static let widgetVisibleKey = "widgetVisible"
+    public static let defaultVisible = true
+
+    /// Resolves desktop visibility from the given defaults. An absent key reads
+    /// as `defaultVisible` (visible); `UserDefaults.bool(forKey:)` on its own
+    /// returns false for an absent key, which would wrongly start the widget
+    /// hidden on a fresh install.
+    public static func isVisible(in defaults: UserDefaults) -> Bool {
+        defaults.object(forKey: widgetVisibleKey) == nil
+            ? defaultVisible
+            : defaults.bool(forKey: widgetVisibleKey)
+    }
 }

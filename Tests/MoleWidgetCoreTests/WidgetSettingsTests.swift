@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import MoleWidgetCore
 
@@ -25,5 +26,22 @@ import Testing
         #expect(WidgetSettings.clampOpacity(0.7) == 0.7)
         #expect(WidgetSettings.clampOpacity(0.3) == 0.3)
         #expect(WidgetSettings.clampOpacity(1.0) == 1.0)
+    }
+
+    @Test func isVisible_absentKey_defaultsToVisible() {
+        let suite = "WidgetSettingsTests.isVisible_absent"
+        let defaults = UserDefaults(suiteName: suite)!
+        defaults.removePersistentDomain(forName: suite)
+        #expect(WidgetSettings.isVisible(in: defaults) == true)
+    }
+
+    @Test func isVisible_storedValue_isHonored() {
+        let suite = "WidgetSettingsTests.isVisible_stored"
+        let defaults = UserDefaults(suiteName: suite)!
+        defaults.removePersistentDomain(forName: suite)
+        defaults.set(false, forKey: WidgetSettings.widgetVisibleKey)
+        #expect(WidgetSettings.isVisible(in: defaults) == false)
+        defaults.set(true, forKey: WidgetSettings.widgetVisibleKey)
+        #expect(WidgetSettings.isVisible(in: defaults) == true)
     }
 }
