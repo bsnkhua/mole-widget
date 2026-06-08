@@ -63,6 +63,14 @@ open "dist/Mole Widget.app"   # or move it to /Applications
 
 ## Update
 
+If you installed the **DMG** into Applications, the widget keeps itself up to
+date via [Sparkle](https://sparkle-project.org): it checks in the background and,
+when a new signed release is available, offers to download and install it in
+place. You can also check on demand from the menu bar icon → **Check for
+Updates…**.
+
+If you installed via **Homebrew**, update through brew instead:
+
 ```bash
 brew update && brew upgrade mole-widget && (pkill -f "Mole Widget.app"; sleep 1; mole-widget)
 ```
@@ -70,10 +78,6 @@ brew update && brew upgrade mole-widget && (pkill -f "Mole Widget.app"; sleep 1;
 (`brew update` first — third-party taps refresh only during a full update.
 The trailing part restarts the widget: brew replaces the files on disk, but
 the old version keeps running until relaunched.)
-
-The widget itself checks GitHub for new releases every 6 hours: when one is
-available, an update icon appears next to the lock (click to copy the command
-above) and the menu bar gets an "Update available" item.
 
 ## Uninstall
 

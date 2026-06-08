@@ -25,6 +25,11 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain
           rm /tmp/cert.p12
 
+      # Sparkle pulls a binary framework; a stale SwiftPM cache occasionally
+      # resolves the wrong artifact in CI. Clearing it keeps builds reproducible.
+      - name: Clear stale SwiftPM cache
+        run: rm -rf ~/Library/Caches/org.swift.swiftpm
+
       - name: Build release binary
         run: swift build -c release --disable-sandbox
 
@@ -38,9 +43,23 @@ jobs:
           cp Resources/Info.plist "$APP/Contents/Info.plist"
           mkdir -p "$APP/Contents/Resources"
           cp Resources/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
-          codesign --force --options runtime \
-            --sign "Developer ID Application: Serhii Bezbabnykh ($APPLE_TEAM_ID)" \
-            "$APP"
+          mkdir -p "$APP/Contents/Frameworks"
+          cp -R .build/release/Sparkle.framework "$APP/Contents/Frameworks/Sparkle.framework"
+          install_name_tool -add_rpath "@executable_path/../Frameworks" "$APP/Contents/MacOS/MoleWidget"
+
+          SIGN="Developer ID Application: Serhii Bezbabnykh ($APPLE_TEAM_ID)"
+          SPARKLE="$APP/Contents/Frameworks/Sparkle.framework/Versions/B"
+
+          # Sign Sparkle components inside-out, then the framework, then the app.
+          codesign --force --options runtime --preserve-metadata=entitlements,identifier \
+            --sign "$SIGN" "$SPARKLE/XPCServices/Downloader.xpc"
+          codesign --force --options runtime --preserve-metadata=entitlements,identifier \
+            --sign "$SIGN" "$SPARKLE/XPCServices/Installer.xpc"
+          codesign --force --options runtime --sign "$SIGN" "$SPARKLE/Autoupdate"
+          codesign --force --options runtime --sign "$SIGN" "$SPARKLE/Updater.app"
+          codesign --force --options runtime --sign "$SIGN" \
+            "$APP/Contents/Frameworks/Sparkle.framework"
+          codesign --force --options runtime --sign "$SIGN" "$APP"
 
       - name: Create DMG
         run: |
@@ -68,9 +87,64 @@ jobs:
       - name: Staple notarization ticket
         run: xcrun stapler staple dist/MoleWidget.dmg
 
-      - name: Upload DMG to GitHub Release
+      - name: Sign DMG for Sparkle
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+        run: |
+          python3 -m venv /tmp/sparkle-venv
+          /tmp/sparkle-venv/bin/pip install cryptography --quiet
+          /tmp/sparkle-venv/bin/python3 << 'PYEOF' >> "$GITHUB_ENV"
+          import base64, os
+          from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+          key = Ed25519PrivateKey.from_private_bytes(base64.b64decode(os.environ['SPARKLE_PRIVATE_KEY']))
+          data = open('dist/MoleWidget.dmg', 'rb').read()
+          sig = base64.b64encode(key.sign(data)).decode()
+          print(f'ED_SIG={sig}')
+          print(f'DMG_LENGTH={len(data)}')
+          PYEOF
+
+      - name: Update appcast.xml
+        run: |
+          TAG=${GITHUB_REF#refs/tags/}
+          VERSION=${TAG#v}
+          PUB_DATE=$(date -u "+%a, %d %b %Y %H:%M:%S +0000")
+          DMG_URL="https://github.com/bsnkhua/mole-widget/releases/download/${TAG}/MoleWidget.dmg"
+          BUNDLE_VER=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" Resources/Info.plist)
+
+          cat > appcast.xml <<EOF
+          <?xml version="1.0" encoding="utf-8"?>
+          <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+              <channel>
+                  <title>Mole Widget</title>
+                  <link>https://github.com/bsnkhua/mole-widget</link>
+                  <description>System monitor desktop widget for macOS</description>
+                  <language>en</language>
+                  <item>
+                      <title>Mole Widget ${VERSION}</title>
+                      <pubDate>${PUB_DATE}</pubDate>
+                      <sparkle:version>${BUNDLE_VER}</sparkle:version>
+                      <sparkle:shortVersionString>${VERSION}</sparkle:shortVersionString>
+                      <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+                      <enclosure
+                          url="${DMG_URL}"
+                          length="${DMG_LENGTH}"
+                          type="application/octet-stream"
+                          sparkle:edSignature="${ED_SIG}"
+                      />
+                  </item>
+              </channel>
+          </rss>
+          EOF
+
+          git config user.email "bsnkhua@gmail.com"
+          git config user.name "Serhii Bezbabnykh"
+          git add appcast.xml
+          git commit -m "chore: update appcast.xml for ${TAG}"
+          git push origin HEAD:main
+
+      - name: Create release and upload DMG
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG=${GITHUB_REF#refs/tags/}
-          gh release upload "$TAG" dist/MoleWidget.dmg --clobber
+          gh release create "$TAG" --title "$TAG" --generate-notes dist/MoleWidget.dmg

@@ -19,8 +19,6 @@ public final class MetricsStore {
     public private(set) var cpuHistory = History()
     public private(set) var netInHistory = History()
     public private(set) var netOutHistory = History()
-    /// Newer release tag (e.g. "v0.4.0") when GitHub has one; nil otherwise.
-    public private(set) var availableUpdate: String?
 
     @ObservationIgnored private let cpuCollector = CPUCollector()
     @ObservationIgnored private let memoryCollector = MemoryCollector()
@@ -30,14 +28,11 @@ public final class MetricsStore {
     @ObservationIgnored private let processCollector = ProcessCollector()
     @ObservationIgnored private let systemInfoCollector = SystemInfoCollector()
 
-    @ObservationIgnored private let updateChecker = UpdateChecker()
-
     @ObservationIgnored private var isSuspended = false
     @ObservationIgnored private var previousCPU: CPUSample?
     @ObservationIgnored private var previousIO: (counters: DiskIOCounters, at: Date)?
     @ObservationIgnored private var previousNetIO: (counters: NetIOCounters, at: Date)?
     @ObservationIgnored private var previousProcs: (samples: [ProcSample], at: Date)?
-    @ObservationIgnored private var lastUpdateCheck: Date?
     @ObservationIgnored private var timers: [Timer] = []
 
     public init() {}
@@ -69,25 +64,7 @@ public final class MetricsStore {
             Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
                 Task { @MainActor in self?.refreshPower() }
             },
-            Timer.scheduledTimer(withTimeInterval: 6 * 3600, repeats: true) { [weak self] _ in
-                Task { @MainActor in self?.checkForUpdates() }
-            },
         ]
-        checkForUpdates()
-    }
-
-    /// Asks GitHub for the latest release tag at most once per 6 hours
-    /// (start() may run repeatedly, e.g. on refresh-rate changes).
-    private func checkForUpdates() {
-        if let last = lastUpdateCheck, Date().timeIntervalSince(last) < 6 * 3600 { return }
-        lastUpdateCheck = Date()
-        Task { [weak self] in
-            guard let self else { return }
-            guard let tag = await self.updateChecker.latestReleaseTag() else { return }
-            if VersionCompare.isNewer(tag, than: CoreInfo.version) {
-                self.availableUpdate = tag
-            }
-        }
     }
 
     public func stop() {
