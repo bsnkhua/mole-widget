@@ -8,6 +8,7 @@ import SwiftUI
 struct MoleWidgetApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @AppStorage(WidgetSettings.positionLockedKey) private var positionLocked = false
+    @AppStorage(WidgetSettings.widgetVisibleKey) private var widgetVisible = true
 
     // Settings: opacity
     // NOTE: write only via the Picker binding — the tags are exact Double
@@ -64,6 +65,7 @@ struct MoleWidgetApp: App {
             .disabled(!appDelegate.updaterController.updater.canCheckForUpdates)
             Divider()
             Toggle("Lock position", isOn: $positionLocked)
+            Toggle("Show on desktop", isOn: $widgetVisible)
             LaunchAtLoginToggle()
             Menu("Settings") {
                 if #unavailable(macOS 26) {
