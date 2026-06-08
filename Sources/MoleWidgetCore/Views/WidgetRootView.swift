@@ -164,56 +164,23 @@ public struct WidgetRootView: View {
     // MARK: - Title bar
 
     /// Always-visible first row: app glyph + name on the left,
-    /// update (when available) and lock controls on the right.
+    /// size and lock controls on the right, Ko-fi badge centered behind them.
     /// Permanent home of the lock — visible even when all sections are hidden.
     private var titleBar: some View {
-        HStack(spacing: 6) {
-            TitleGlyphView()
-            Text("Mole Widget")
-                .fontWeight(.bold)
-                .foregroundStyle(Theme.header)
-            Spacer()
-            HStack(spacing: 2) {
-                if let version = store.availableUpdate {
-                    updateButton(version: version)
+        ZStack {
+            KofiButton()
+            HStack(spacing: 6) {
+                TitleGlyphView()
+                Text("Mole Widget")
+                    .fontWeight(.bold)
+                    .foregroundStyle(Theme.header)
+                Spacer()
+                HStack(spacing: 2) {
+                    sizeButtons
+                    lockButton
                 }
-                sizeButtons
-                lockButton
             }
         }
-    }
-
-    // MARK: - Update button
-
-    @State private var upgradeCommandCopied = false
-
-    /// Full upgrade one-liner: refresh taps, upgrade, then restart the widget
-    /// so the new version actually runs (brew leaves the old process alive).
-    static let upgradeCommand =
-        #"brew update && brew upgrade mole-widget && (pkill -f "Mole Widget.app"; sleep 1; mole-widget)"#
-
-    /// Appears next to the lock only when GitHub has a newer release.
-    /// Click copies the full upgrade command to the clipboard.
-    private func updateButton(version: String) -> some View {
-        Button {
-            let pasteboard = NSPasteboard.general
-            pasteboard.clearContents()
-            pasteboard.setString(Self.upgradeCommand, forType: .string)
-            upgradeCommandCopied = true
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                upgradeCommandCopied = false
-            }
-        } label: {
-            Image(systemName: upgradeCommandCopied ? "checkmark.circle.fill" : "arrow.down.circle.fill")
-                .font(.system(size: 11, weight: .medium))
-                .foregroundStyle(upgradeCommandCopied ? Theme.accent : Theme.warning)
-                .frame(width: 20, height: 20)
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .help(upgradeCommandCopied
-            ? "Copied! Paste it into Terminal — it upgrades and restarts the widget"
-            : "\(version) is available — click to copy the upgrade command")
     }
 
     // MARK: - Section factory
@@ -304,6 +271,48 @@ public struct WidgetRootView: View {
         .help(positionLocked
             ? "Position and size are locked — click to unlock"
             : "Click to lock the widget position and size")
+    }
+}
+
+// MARK: - Ko-fi
+
+/// Small "Ko-fi | Support" capsule that opens the donation page.
+/// Centered behind the title row, mirroring the sibling vuvuzela widget.
+private struct KofiButton: View {
+    @State private var hovering = false
+
+    private let kofiRed = Color(red: 1.0, green: 0.369, blue: 0.357)   // #FF5E5B
+    private let kofiBg  = Color(red: 0.10, green: 0.10, blue: 0.10)    // near-black
+
+    var body: some View {
+        Button {
+            NSWorkspace.shared.open(URL(string: "https://ko-fi.com/bsnkhua")!)
+        } label: {
+            HStack(spacing: 0) {
+                HStack(spacing: 4) {
+                    Image(systemName: "cup.and.saucer.fill")
+                        .font(.system(size: 9, weight: .medium))
+                    Text("Ko-fi")
+                        .font(.system(size: 10, weight: .semibold))
+                }
+                .foregroundStyle(.white)
+                .padding(.horizontal, 7)
+                .padding(.vertical, 3)
+                .background(kofiBg)
+
+                Text("Support")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 7)
+                    .padding(.vertical, 3)
+                    .background(kofiRed)
+            }
+            .clipShape(Capsule())
+            .opacity(hovering ? 0.80 : 1.0)
+        }
+        .buttonStyle(.plain)
+        .onHover { hovering = $0 }
+        .help("Support on Ko-fi ☕")
     }
 }
 

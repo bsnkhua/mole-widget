@@ -1,6 +1,7 @@
 import AppKit
 import MoleWidgetCore
 import ServiceManagement
+import Sparkle
 import SwiftUI
 
 @main
@@ -57,6 +58,10 @@ struct MoleWidgetApp: App {
             Button("Report an Issue") {
                 NSWorkspace.shared.open(UpdateChecker.issuesPageURL)
             }
+            Button("Check for Updates…") {
+                appDelegate.updaterController.updater.checkForUpdates()
+            }
+            .disabled(!appDelegate.updaterController.updater.canCheckForUpdates)
             Divider()
             Toggle("Lock position", isOn: $positionLocked)
             LaunchAtLoginToggle()
@@ -82,12 +87,6 @@ struct MoleWidgetApp: App {
                     Toggle("Power",     isOn: $showPower)
                     Toggle("Network",   isOn: $showNetwork)
                     Toggle("Processes", isOn: $showProcesses)
-                }
-            }
-            if let update = appDelegate.store.availableUpdate {
-                Divider()
-                Button("Update available: \(update) — open releases") {
-                    NSWorkspace.shared.open(UpdateChecker.releasesPageURL)
                 }
             }
             Divider()
@@ -163,7 +162,16 @@ final class DesktopWindow: NSWindow {
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var window: DesktopWindow?
-    let store = MetricsStore() // exposed so MenuBarExtra can show update state
+    let store = MetricsStore()
+
+    /// Sparkle updater. `startingUpdater: true` kicks off the background check
+    /// on launch (gated by SUEnableAutomaticChecks in Info.plist); the menu's
+    /// "Check for Updates…" item drives it manually.
+    let updaterController = SPUStandardUpdaterController(
+        startingUpdater: true,
+        updaterDelegate: nil,
+        userDriverDelegate: nil
+    )
 
     /// Tracks the last refresh interval seen in UserDefaults so we can detect changes.
     private var lastRefreshInterval: Double = UserDefaults.standard.object(
