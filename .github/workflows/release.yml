@@ -110,7 +110,7 @@ jobs:
           TAG=${GITHUB_REF#refs/tags/}
           VERSION=${TAG#v}
           PUB_DATE=$(date -u "+%a, %d %b %Y %H:%M:%S +0000")
-          DMG_URL="https://github.com/bsnkhua/mole-widget/releases/download/${TAG}/MoleWidget.dmg"
+          DMG_URL="https://github.com/TadelUnso/mole-widget/releases/download/${TAG}/MoleWidget.dmg"
           BUNDLE_VER=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" Resources/Info.plist)
 
           cat > appcast.xml <<EOF
@@ -118,7 +118,7 @@ jobs:
           <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
               <channel>
                   <title>Mole Widget</title>
-                  <link>https://github.com/bsnkhua/mole-widget</link>
+                  <link>https://github.com/TadelUnso/mole-widget</link>
                   <description>System monitor desktop widget for macOS</description>
                   <language>en</language>
                   <item>
@@ -138,7 +138,7 @@ jobs:
           </rss>
           EOF
 
-          git config user.email "bsnkhua@gmail.com"
+          git config user.email "tadelunso@gmail.com"
           git config user.name "Serhii Bezbabnykh"
           git add appcast.xml
           git commit -m "chore: update appcast.xml for ${TAG}"

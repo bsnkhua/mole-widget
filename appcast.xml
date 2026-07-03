@@ -2,7 +2,7 @@
 <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
     <channel>
         <title>Mole Widget</title>
-        <link>https://github.com/bsnkhua/mole-widget</link>
+        <link>https://github.com/TadelUnso/mole-widget</link>
         <description>System monitor desktop widget for macOS</description>
         <language>en</language>
         <item>
@@ -12,7 +12,7 @@
             <sparkle:shortVersionString>0.7.1</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <enclosure
-                url="https://github.com/bsnkhua/mole-widget/releases/download/v0.7.1/MoleWidget.dmg"
+                url="https://github.com/TadelUnso/mole-widget/releases/download/v0.7.1/MoleWidget.dmg"
                 length="1402663"
                 type="application/octet-stream"
                 sparkle:edSignature="1UapuNL0Uxvuz1A/UzM3VY9VjsayoncQxJiiLiDFZF8V6OcXCKQJrwxvdYyE2MAR+4pyORCZrKjMydCe/r14Bg=="

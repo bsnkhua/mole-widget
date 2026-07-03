@@ -4,14 +4,14 @@ import Testing
 
 @Suite struct UpdateCheckerTests {
     @Test func repoPageURL() {
-        #expect(UpdateChecker.repoPageURL.absoluteString == "https://github.com/bsnkhua/mole-widget")
+        #expect(UpdateChecker.repoPageURL.absoluteString == "https://github.com/TadelUnso/mole-widget")
     }
 
     @Test func issuesPageURL() {
-        #expect(UpdateChecker.issuesPageURL.absoluteString == "https://github.com/bsnkhua/mole-widget/issues")
+        #expect(UpdateChecker.issuesPageURL.absoluteString == "https://github.com/TadelUnso/mole-widget/issues")
     }
 
     @Test func releasesPageURL() {
-        #expect(UpdateChecker.releasesPageURL.absoluteString == "https://github.com/bsnkhua/mole-widget/releases")
+        #expect(UpdateChecker.releasesPageURL.absoluteString == "https://github.com/TadelUnso/mole-widget/releases")
     }
 }

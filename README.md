@@ -1,7 +1,7 @@
 # Mole Widget
 
-[![CI](https://github.com/bsnkhua/mole-widget/actions/workflows/ci.yml/badge.svg)](https://github.com/bsnkhua/mole-widget/actions/workflows/ci.yml)
-[![GitHub release](https://img.shields.io/github/v/release/bsnkhua/mole-widget)](https://github.com/bsnkhua/mole-widget/releases)
+[![CI](https://github.com/TadelUnso/mole-widget/actions/workflows/ci.yml/badge.svg)](https://github.com/TadelUnso/mole-widget/actions/workflows/ci.yml)
+[![GitHub release](https://img.shields.io/github/v/release/TadelUnso/mole-widget)](https://github.com/TadelUnso/mole-widget/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Mentioned in Awesome Mac](https://awesome.re/mentioned-badge.svg)](https://github.com/jaywcjlove/awesome-mac)
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-Support-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/tadel_unso)
@@ -38,14 +38,14 @@
 
 ### Direct download
 
-Download the latest `MoleWidget.dmg` from the [Releases page](https://github.com/bsnkhua/mole-widget/releases), open it, drag **Mole Widget** into Applications, and launch it from there.
+Download the latest `MoleWidget.dmg` from the [Releases page](https://github.com/TadelUnso/mole-widget/releases), open it, drag **Mole Widget** into Applications, and launch it from there.
 
 The app is signed and notarized — Gatekeeper will not block it.
 
 ### Homebrew
 
 ```bash
-brew install bsnkhua/tap/mole-widget
+brew install TadelUnso/tap/mole-widget
 mole-widget   # launch the widget
 ```
 
@@ -92,7 +92,7 @@ brew uninstall mole-widget
 3. Optional cleanup — remove the tap and the saved settings:
 
 ```bash
-brew untap bsnkhua/tap
+brew untap TadelUnso/tap
 defaults delete com.sbezbabnykh.mole-widget
 ```
 
@@ -105,7 +105,7 @@ defaults delete com.sbezbabnykh.mole-widget
 
 ## Feedback
 
-Found a bug or have an idea? [Open an issue](https://github.com/bsnkhua/mole-widget/issues) —
+Found a bug or have an idea? [Open an issue](https://github.com/TadelUnso/mole-widget/issues) —
 bug reports and feature requests are both welcome. The widget's menu bar icon also has a
 **Report an Issue** shortcut.
 

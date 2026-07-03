@@ -35,7 +35,7 @@ body:
     attributes:
       label: Install method
       options:
-        - Homebrew (brew install bsnkhua/tap/mole-widget)
+        - Homebrew (brew install TadelUnso/tap/mole-widget)
         - Built from source
     validations:
       required: true

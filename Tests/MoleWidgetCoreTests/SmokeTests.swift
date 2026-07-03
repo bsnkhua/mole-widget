@@ -3,6 +3,6 @@ import Testing
 
 @Suite struct SmokeTests {
     @Test func version() {
-        #expect(CoreInfo.version == "0.7.1")
+        #expect(CoreInfo.version == "0.7.2")
     }
 }
