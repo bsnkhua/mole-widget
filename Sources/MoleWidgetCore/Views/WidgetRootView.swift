@@ -304,7 +304,7 @@ private struct KofiButton: View {
 
     var body: some View {
         Button {
-            NSWorkspace.shared.open(URL(string: "https://ko-fi.com/bsnkhua")!)
+            NSWorkspace.shared.open(URL(string: "https://ko-fi.com/tadel_unso")!)
         } label: {
             HStack(spacing: 0) {
                 HStack(spacing: 4) {
