@@ -28,6 +28,34 @@ import Testing
         #expect(WidgetSettings.clampOpacity(1.0) == 1.0)
     }
 
+    @Test func clampFontSize_belowMin_returnsMin() {
+        #expect(WidgetSettings.clampFontSize(8) == 11)
+        #expect(WidgetSettings.clampFontSize(0) == 11)
+    }
+
+    @Test func clampFontSize_aboveMax_returnsMax() {
+        #expect(WidgetSettings.clampFontSize(20) == 16)
+        #expect(WidgetSettings.clampFontSize(100) == 16)
+    }
+
+    @Test func clampFontSize_inRange_passesThrough() {
+        #expect(WidgetSettings.clampFontSize(11) == 11)
+        #expect(WidgetSettings.clampFontSize(12) == 12)
+        #expect(WidgetSettings.clampFontSize(14) == 14)
+        #expect(WidgetSettings.clampFontSize(16) == 16)
+    }
+
+    @Test func resolveFontStyle_validRaw_returnsMatch() {
+        #expect(WidgetSettings.resolveFontStyle("system") == .system)
+        #expect(WidgetSettings.resolveFontStyle("monospaced") == .monospaced)
+    }
+
+    @Test func resolveFontStyle_invalidOrNil_defaultsToMonospaced() {
+        #expect(WidgetSettings.resolveFontStyle("garbage") == .monospaced)
+        #expect(WidgetSettings.resolveFontStyle(nil) == .monospaced)
+        #expect(WidgetSettings.resolveFontStyle("") == .monospaced)
+    }
+
     @Test func isVisible_absentKey_defaultsToVisible() {
         let suite = "WidgetSettingsTests.isVisible_absent"
         let defaults = UserDefaults(suiteName: suite)!

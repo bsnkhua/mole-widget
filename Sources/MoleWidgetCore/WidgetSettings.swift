@@ -34,6 +34,31 @@ public enum WidgetSettings {
     public static let refreshIntervalKey = "refreshInterval"
     public static let defaultRefreshInterval: Double = 2.0
 
+    // MARK: - Font
+
+    /// Base font size in points. Picker offers 11 / 12 / 14 / 16.
+    public static let fontSizeKey = "fontSize"
+    public static let defaultFontSize: Double = 12
+
+    /// Clamps the font size to the supported range [11, 16].
+    public static func clampFontSize(_ size: Double) -> Double {
+        min(max(size, 11), 16)
+    }
+
+    /// Font design: monospaced (aligned columns) or the native system face.
+    public enum FontStyle: String {
+        case monospaced
+        case system
+    }
+
+    public static let fontStyleKey = "fontStyle"
+
+    /// Resolves a stored raw value into a `FontStyle`, defaulting to
+    /// `.monospaced` for absent or unrecognized values.
+    public static func resolveFontStyle(_ raw: String?) -> FontStyle {
+        raw.flatMap(FontStyle.init(rawValue:)) ?? .monospaced
+    }
+
     // MARK: - Section visibility
 
     public static let showHeaderKey    = "showHeader"

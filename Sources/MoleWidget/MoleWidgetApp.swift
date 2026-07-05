@@ -20,6 +20,14 @@ struct MoleWidgetApp: App {
     @AppStorage(WidgetSettings.refreshIntervalKey)
     private var refreshInterval = WidgetSettings.defaultRefreshInterval
 
+    // Settings: font
+    // NOTE: font-size tags are exact Double literals — same Picker matching
+    // constraint as opacity above.
+    @AppStorage(WidgetSettings.fontSizeKey)
+    private var fontSize = WidgetSettings.defaultFontSize
+    @AppStorage(WidgetSettings.fontStyleKey)
+    private var fontStyle = WidgetSettings.FontStyle.monospaced.rawValue
+
     // Settings: section visibility
     @AppStorage(WidgetSettings.showHeaderKey)    private var showHeader    = true
     @AppStorage(WidgetSettings.showCPUKey)       private var showCPU       = true
@@ -80,6 +88,16 @@ struct MoleWidgetApp: App {
                     Text("1 s").tag(1.0)
                     Text("2 s").tag(2.0)
                     Text("5 s").tag(5.0)
+                }
+                Picker("Font size", selection: $fontSize) {
+                    Text("Small").tag(11.0)
+                    Text("Medium").tag(12.0)
+                    Text("Large").tag(14.0)
+                    Text("Extra Large").tag(16.0)
+                }
+                Picker("Font style", selection: $fontStyle) {
+                    Text("Monospaced").tag(WidgetSettings.FontStyle.monospaced.rawValue)
+                    Text("System").tag(WidgetSettings.FontStyle.system.rawValue)
                 }
                 Menu("Sections") {
                     Toggle("Header",    isOn: $showHeader)

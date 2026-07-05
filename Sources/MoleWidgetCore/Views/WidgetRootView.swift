@@ -54,6 +54,10 @@ public struct WidgetRootView: View {
     // Appearance
     @AppStorage(WidgetSettings.backgroundOpacityKey)
     private var backgroundOpacity = WidgetSettings.defaultOpacity
+    @AppStorage(WidgetSettings.fontSizeKey)
+    private var fontSize = WidgetSettings.defaultFontSize
+    @AppStorage(WidgetSettings.fontStyleKey)
+    private var fontStyle = WidgetSettings.FontStyle.monospaced.rawValue
 
     // Section visibility
     @AppStorage(WidgetSettings.showHeaderKey)    private var showHeader    = true
@@ -154,7 +158,10 @@ public struct WidgetRootView: View {
                 }
             }
         }
-        .font(Theme.font)
+        .font(Theme.font(
+            size: WidgetSettings.clampFontSize(fontSize),
+            style: WidgetSettings.resolveFontStyle(fontStyle)
+        ))
         .padding(16)
         .modifier(WidgetBackground(opacity: backgroundOpacity))
         .overlay(alignment: .trailing) {
