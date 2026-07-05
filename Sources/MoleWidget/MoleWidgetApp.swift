@@ -177,31 +177,35 @@ private struct MenuBarLabel: View {
         Image(nsImage: metrics.isEmpty ? icon : Self.image(for: metrics))
     }
 
-    /// Draws the metrics as two monospaced rows (labels over values, columns
-    /// aligned) into a template image that macOS tints for the menu bar.
+    /// Draws the metrics into a template image that macOS tints for the menu
+    /// bar. Each metric is a column with its label on top and value below,
+    /// centered against each other; columns are separated by a fixed gap.
     private static func image(for metrics: [MenuBarMetric]) -> NSImage {
-        let columns = metrics.map { metric -> (label: String, value: String) in
-            let width = max(metric.label.count, metric.value.count)
-            return (
-                metric.label.padding(toLength: width, withPad: " ", startingAt: 0),
-                metric.value.padding(toLength: width, withPad: " ", startingAt: 0)
-            )
-        }
-        let labelLine = columns.map(\.label).joined(separator: " ")
-        let valueLine = columns.map(\.value).joined(separator: " ")
-
-        let font = NSFont.monospacedSystemFont(ofSize: 9, weight: .medium)
+        let font = NSFont.monospacedSystemFont(ofSize: 11, weight: .medium)
         let attrs: [NSAttributedString.Key: Any] = [.font: font, .foregroundColor: NSColor.black]
-        let top = NSAttributedString(string: labelLine, attributes: attrs)
-        let bottom = NSAttributedString(string: valueLine, attributes: attrs)
 
-        let lineHeight = font.ascender - font.descender
-        let width = ceil(max(top.size().width, bottom.size().width))
-        let height = ceil(lineHeight * 2)
+        let cells = metrics.map { metric -> (label: NSAttributedString, value: NSAttributedString, width: CGFloat) in
+            let label = NSAttributedString(string: metric.label, attributes: attrs)
+            let value = NSAttributedString(string: metric.value, attributes: attrs)
+            return (label, value, ceil(max(label.size().width, value.size().width)))
+        }
+
+        let columnGap: CGFloat = 10
+        // Pack the two rows tightly so the menu bar renders the glyphs large
+        // rather than scaling a tall image down.
+        let rowPitch = ceil(font.capHeight) + 3
+        let width = cells.reduce(0) { $0 + $1.width } + columnGap * CGFloat(max(0, cells.count - 1))
+        let height = rowPitch * 2
 
         let image = NSImage(size: NSSize(width: width, height: height), flipped: false) { _ in
-            bottom.draw(at: NSPoint(x: 0, y: 0))
-            top.draw(at: NSPoint(x: 0, y: lineHeight))
+            var x: CGFloat = 0
+            for cell in cells {
+                let labelX = x + (cell.width - cell.label.size().width) / 2
+                let valueX = x + (cell.width - cell.value.size().width) / 2
+                cell.value.draw(at: NSPoint(x: valueX, y: -font.descender))
+                cell.label.draw(at: NSPoint(x: labelX, y: rowPitch - font.descender))
+                x += cell.width + columnGap
+            }
             return true
         }
         image.isTemplate = true
