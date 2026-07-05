@@ -8,7 +8,7 @@ public enum UsageHistoryMath {
     public static func pruned(
         _ samples: [UsageSample],
         now: Date,
-        retention: TimeInterval = 86_400
+        retention: TimeInterval = 14_400
     ) -> [UsageSample] {
         let cutoff = now.addingTimeInterval(-retention)
         return samples.filter { $0.timestamp >= cutoff }

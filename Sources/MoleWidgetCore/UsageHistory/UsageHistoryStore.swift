@@ -19,11 +19,13 @@ public final class UsageHistoryStore {
 
     /// - Parameters:
     ///   - persistence: storage backend (inject a temp dir in tests).
-    ///   - retention: how long to keep samples (default 24 h).
+    ///   - retention: how long to keep samples (default 4 h — short enough that
+    ///     peaks stay easy to scrub to on the chart, long enough to explain a
+    ///     recent slowdown).
     ///   - sampleInterval: minimum spacing between recorded samples (default 60 s).
     public init(
         persistence: UsageHistoryPersistence,
-        retention: TimeInterval = 86_400,
+        retention: TimeInterval = 14_400,
         sampleInterval: TimeInterval = 60
     ) {
         self.persistence = persistence
