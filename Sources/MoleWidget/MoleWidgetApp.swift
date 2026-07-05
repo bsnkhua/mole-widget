@@ -205,10 +205,11 @@ private struct MenuBarLabel: View {
 
         let columnGap: CGFloat = 16
         let rowGap: CGFloat = 3
+        let vPad: CGFloat = 2  // breathing room so cap tops/bottoms aren't clipped
         let width = cells.reduce(0) { $0 + $1.width } + columnGap * CGFloat(max(0, cells.count - 1))
-        let height = ceil(valueFont.capHeight + rowGap + labelFont.capHeight)
-        let valueY = valueFont.descender                              // value caps sit at [0, cap]
-        let labelY = valueFont.capHeight + rowGap + labelFont.descender
+        let height = ceil(valueFont.capHeight + rowGap + labelFont.capHeight + vPad * 2)
+        let valueY = valueFont.descender + vPad                       // value caps at [vPad, vPad+cap]
+        let labelY = valueFont.capHeight + rowGap + labelFont.descender + vPad
 
         let image = NSImage(size: NSSize(width: width, height: height), flipped: false) { _ in
             // Resolve labelColor against the menu bar's appearance, not the app's.
