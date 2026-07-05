@@ -3,15 +3,17 @@ import Foundation
 /// Builds the compact live-metrics string shown in the menu bar.
 ///
 /// The menu bar has little room, so this uses a tighter format than `Fmt`
-/// (integer percent, one-decimal gigabytes, integer degrees). Enabled metrics
-/// whose data is not yet available render as `--` placeholders; when no metric
-/// is enabled the function returns `nil` so the caller falls back to the icon.
+/// (integer percent, integer degrees). An enabled metric whose value is `nil`
+/// is omitted entirely — this keeps the menu bar clean at startup and on Macs
+/// without a battery (no temperature sensor). Returns `nil` when nothing is
+/// enabled or no enabled metric has data yet, so the caller shows the icon.
 public enum MenuBarText {
     /// - Parameters:
     ///   - cpuFraction: `MetricsStore.cpu?.totalUsage`, range 0...1.
     ///   - memFraction: `MetricsStore.memory?.usedFraction`, range 0...1.
     ///   - batteryTempC: `MetricsStore.power?.temperatureCelsius`.
-    /// - Returns: e.g. `"CPU 42%  MEM 34%  TEMP 31°"`, or `nil` when nothing is enabled.
+    /// - Returns: e.g. `"CPU 42%  MEM 34%  TEMP 31°"`, or `nil` when there is
+    ///   nothing to show.
     public static func compose(
         cpuFraction: Double?,
         memFraction: Double?,
@@ -20,22 +22,18 @@ public enum MenuBarText {
         showMemory: Bool,
         showTemp: Bool
     ) -> String? {
-        guard showCPU || showMemory || showTemp else { return nil }
-
         var parts: [String] = []
-        if showCPU {
-            parts.append("CPU " + (cpuFraction.map(percent) ?? placeholder))
+        if showCPU, let cpuFraction {
+            parts.append("CPU " + percent(cpuFraction))
         }
-        if showMemory {
-            parts.append("MEM " + (memFraction.map(percent) ?? placeholder))
+        if showMemory, let memFraction {
+            parts.append("MEM " + percent(memFraction))
         }
-        if showTemp {
-            parts.append("TEMP " + (batteryTempC.map(degrees) ?? placeholder))
+        if showTemp, let batteryTempC {
+            parts.append("TEMP " + degrees(batteryTempC))
         }
-        return parts.joined(separator: "  ")
+        return parts.isEmpty ? nil : parts.joined(separator: "  ")
     }
-
-    private static let placeholder = "--"
 
     private static func percent(_ fraction: Double) -> String {
         "\(Int((fraction * 100).rounded()))%"

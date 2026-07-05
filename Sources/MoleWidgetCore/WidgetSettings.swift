@@ -65,16 +65,16 @@ public enum WidgetSettings {
 
     // MARK: - Menu bar metrics
 
-    /// Live metrics shown as text in the menu bar. CPU is on by default so the
-    /// menu bar shows a live readout out of the box; memory and temperature are
-    /// opt-in.
+    /// Live metrics shown as text in the menu bar. All on by default so the menu
+    /// bar shows a full readout out of the box; a metric with no data (e.g.
+    /// battery temperature on a desktop Mac) is simply omitted from the text.
     public static let menuBarShowCPUKey    = "menuBarShowCPU"
     public static let menuBarShowMemoryKey = "menuBarShowMemory"
     public static let menuBarShowTempKey   = "menuBarShowTemp"
 
     public static let defaultMenuBarShowCPU    = true
-    public static let defaultMenuBarShowMemory = false
-    public static let defaultMenuBarShowTemp   = false
+    public static let defaultMenuBarShowMemory = true
+    public static let defaultMenuBarShowTemp   = true
 
     // MARK: - Section visibility
 

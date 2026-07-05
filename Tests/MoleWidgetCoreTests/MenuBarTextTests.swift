@@ -25,11 +25,19 @@ import Testing
         #expect(text == "CPU 42%  MEM 34%  TEMP 31°")
     }
 
-    @Test func enabledButNilData_showsPlaceholders() {
+    @Test func allEnabledButNoData_returnsNil() {
         #expect(MenuBarText.compose(
             cpuFraction: nil, memFraction: nil, batteryTempC: nil,
             showCPU: true, showMemory: true, showTemp: true
-        ) == "CPU --  MEM --  TEMP --")
+        ) == nil)
+    }
+
+    @Test func nilMetricIsOmitted() {
+        // Temp enabled but absent (desktop Mac) → dropped, others remain.
+        #expect(MenuBarText.compose(
+            cpuFraction: 0.42, memFraction: 0.34, batteryTempC: nil,
+            showCPU: true, showMemory: true, showTemp: true
+        ) == "CPU 42%  MEM 34%")
     }
 
     @Test func cpuPercent_rounds() {
