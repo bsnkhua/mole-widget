@@ -8,6 +8,14 @@ import Testing
         #expect(Fmt.gigabytes(0) == "0.0 GB")
     }
 
+    @Test func memoryCompact() {
+        #expect(Fmt.memoryCompact(1_610_612_736) == "1.5G")   // 1.5 GiB
+        #expect(Fmt.memoryCompact(1_073_741_824) == "1.0G")   // exactly 1 GiB
+        #expect(Fmt.memoryCompact(831_472_640) == "793M")     // 793 MiB
+        #expect(Fmt.memoryCompact(5_242_880) == "5M")         // 5 MiB
+        #expect(Fmt.memoryCompact(0) == "0M")
+    }
+
     @Test func percent() {
         #expect(Fmt.percent(0.119) == "11.9%")
         #expect(Fmt.percent(1.0) == "100.0%")

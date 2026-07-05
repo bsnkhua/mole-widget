@@ -125,7 +125,7 @@ public struct UsageHistoryView: View {
                             Spacer()
                             Text("\(Int((proc.cpuFraction * 100).rounded()))%")
                                 .monospacedDigit().foregroundStyle(.secondary)
-                            Text(Fmt.gigabytes(proc.memoryBytes))
+                            Text(Fmt.memoryCompact(proc.memoryBytes))
                                 .monospacedDigit().foregroundStyle(.secondary)
                                 .frame(width: 70, alignment: .trailing)
                         }

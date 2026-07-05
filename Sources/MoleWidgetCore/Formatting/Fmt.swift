@@ -12,6 +12,14 @@ public enum Fmt {
         "\(gigabytesCompact(used)) used · \(gigabytesCompact(free)) free"
     }
 
+    /// Adaptive compact memory footprint: "1.5G" at or above 1 GiB, "793M"
+    /// below. Avoids showing small processes as a misleading "0.0G".
+    public static func memoryCompact(_ bytes: UInt64) -> String {
+        let gib = Double(bytes) / 1_073_741_824.0
+        if gib >= 1 { return String(format: "%.1fG", gib) }
+        return String(format: "%.0fM", Double(bytes) / 1_048_576.0)
+    }
+
     /// 0.119 → "11.9%"
     public static func percent(_ fraction: Double) -> String {
         String(format: "%.1f%%", fraction * 100)

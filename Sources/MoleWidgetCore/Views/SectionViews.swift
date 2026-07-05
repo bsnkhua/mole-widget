@@ -231,7 +231,6 @@ public struct ProcessesSectionView: View, Equatable {
 
     private func valueString(_ p: ProcessUsage) -> String {
         let cpuPct = String(format: "%.0f%%", p.cpuFraction * 100)
-        let memGb = String(format: "%.1fG", Double(p.memoryBytes) / 1_073_741_824.0)
-        return "\(cpuPct) · \(memGb)"
+        return "\(cpuPct) · \(Fmt.memoryCompact(p.memoryBytes))"
     }
 }
