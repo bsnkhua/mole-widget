@@ -11,13 +11,13 @@ public enum MenuBarText {
     /// - Parameters:
     ///   - cpuFraction: `MetricsStore.cpu?.totalUsage`, range 0...1.
     ///   - memFraction: `MetricsStore.memory?.usedFraction`, range 0...1.
-    ///   - batteryTempC: `MetricsStore.power?.temperatureCelsius`.
-    /// - Returns: e.g. `"CPU 42%  MEM 34%  TEMP 31°"`, or `nil` when there is
+    ///   - temperatureC: `MetricsStore.cpuTemperature` (SoC die temperature).
+    /// - Returns: e.g. `"CPU 42%  MEM 34%  TEMP 54°"`, or `nil` when there is
     ///   nothing to show.
     public static func compose(
         cpuFraction: Double?,
         memFraction: Double?,
-        batteryTempC: Double?,
+        temperatureC: Double?,
         showCPU: Bool,
         showMemory: Bool,
         showTemp: Bool
@@ -29,8 +29,8 @@ public enum MenuBarText {
         if showMemory, let memFraction {
             parts.append("MEM " + percent(memFraction))
         }
-        if showTemp, let batteryTempC {
-            parts.append("TEMP " + degrees(batteryTempC))
+        if showTemp, let temperatureC {
+            parts.append("TEMP " + degrees(temperatureC))
         }
         return parts.isEmpty ? nil : parts.joined(separator: "  ")
     }

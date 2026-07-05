@@ -3,16 +3,21 @@ import SwiftUI
 public struct CPUSectionView: View, Equatable {
     let snapshot: CPUSnapshot?
     let history: [Double]
+    let temperature: Double?
 
-    public init(snapshot: CPUSnapshot?, history: [Double]) {
+    public init(snapshot: CPUSnapshot?, history: [Double], temperature: Double?) {
         self.snapshot = snapshot
         self.history = history
+        self.temperature = temperature
     }
 
     public var body: some View {
         SectionView(icon: "◉", title: "CPU") {
             if let s = snapshot {
                 MetricRow(label: "Total", fraction: s.totalUsage, value: Fmt.percent(s.totalUsage))
+                if let temperature {
+                    TextRow(label: "Temp", value: String(format: "%.0f°C", temperature))
+                }
                 ForEach(s.topCores, id: \.index) { core in
                     MetricRow(
                         label: "Core\(core.index + 1)",

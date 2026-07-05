@@ -198,7 +198,7 @@ public struct WidgetRootView: View {
     private func sectionView(for section: WidgetSection) -> some View {
         switch section {
         case .cpu:
-            CPUSectionView(snapshot: store.cpu, history: store.cpuHistory.values).equatable()
+            CPUSectionView(snapshot: store.cpu, history: store.cpuHistory.values, temperature: store.cpuTemperature).equatable()
         case .memory:
             MemorySectionView(snapshot: store.memory).equatable()
         case .disk:

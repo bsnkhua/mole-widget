@@ -108,7 +108,7 @@ struct MoleWidgetApp: App {
                 Menu("Menu bar metrics") {
                     Toggle("CPU",     isOn: $menuBarShowCPU)
                     Toggle("Memory",  isOn: $menuBarShowMemory)
-                    Toggle("Battery temperature", isOn: $menuBarShowTemp)
+                    Toggle("CPU temperature", isOn: $menuBarShowTemp)
                 }
                 Menu("Sections") {
                     Toggle("Header",    isOn: $showHeader)
@@ -166,7 +166,7 @@ private struct MenuBarLabel: View {
         if let text = MenuBarText.compose(
             cpuFraction: store.cpu?.totalUsage,
             memFraction: store.memory?.usedFraction,
-            batteryTempC: store.power?.temperatureCelsius,
+            temperatureC: store.cpuTemperature,
             showCPU: showCPU,
             showMemory: showMemory,
             showTemp: showTemp

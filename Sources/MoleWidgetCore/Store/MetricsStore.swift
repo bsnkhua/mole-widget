@@ -11,6 +11,7 @@ public final class MetricsStore {
     public private(set) var diskUsage: DiskUsageSnapshot?
     public private(set) var diskIO: DiskIORates?
     public private(set) var power: PowerSnapshot?
+    public private(set) var cpuTemperature: Double?
     public private(set) var netRates: NetIORates?
     public private(set) var networkInfo: NetworkInfo?
     public private(set) var topProcesses: [ProcessUsage] = []
@@ -27,6 +28,7 @@ public final class MetricsStore {
     @ObservationIgnored private let networkCollector = NetworkCollector()
     @ObservationIgnored private let processCollector = ProcessCollector()
     @ObservationIgnored private let systemInfoCollector = SystemInfoCollector()
+    @ObservationIgnored private let smcTemperature = SMCTemperature()
 
     @ObservationIgnored private var previousCPU: CPUSample?
     @ObservationIgnored private var previousIO: (counters: DiskIOCounters, at: Date)?
@@ -153,6 +155,7 @@ public final class MetricsStore {
     /// Battery + network interface info + system info — every 30 seconds.
     public func refreshPower() {
         power = powerCollector.sample()
+        cpuTemperature = smcTemperature.cpuTemperature()
         networkInfo = networkCollector.info()
         systemInfo = systemInfoCollector.sample()
     }
