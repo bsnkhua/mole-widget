@@ -14,7 +14,7 @@
 ## Features
 
 - **Header** — chip, RAM, macOS version, uptime and a composite health score (0–100)
-- **CPU** — total usage, top-3 busiest cores, load average, usage trend sparkline
+- **CPU** — total usage, top-3 busiest cores, load average, SoC temperature, usage trend sparkline
 - **Memory** — used/free, total, cached, available
 - **Disk** — root volume usage, used/free space, read/write speed
 - **Power** — charge level, battery health, status, cycle count, temperature
@@ -27,7 +27,7 @@
 - 🔒 Clickable lock icon on the widget (plus a "Lock position" menu item) pins both position and size
 - Hide the widget with the eye icon on it; bring it back via **Show on desktop** in the menu bar. The hidden state is remembered across launches
 - **Usage History** — a 24-hour timeline of CPU and RAM with a scrubber; pick any moment to see which processes were heaviest then. Open it from the menu bar
-- **Menu bar metrics** — optionally show live CPU, memory, and battery temperature as text in the menu bar (stays live even while the widget is hidden)
+- **Menu bar metrics** — show live CPU, memory, and CPU temperature as text in the menu bar (each toggleable; stays live even while the widget is hidden)
 - Settings in the menu bar: background opacity, visible sections, refresh rate (1/2/5 s), font size and style (monospaced or system)
 - Launch at login toggle; no Dock icon
 
