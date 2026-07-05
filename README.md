@@ -26,7 +26,7 @@
 - Resizable: drag the right edge to adjust the width (490–880 pt), saved across launches
 - 🔒 Clickable lock icon on the widget (plus a "Lock position" menu item) pins both position and size
 - Hide the widget with the eye icon on it; bring it back via **Show on desktop** in the menu bar. The hidden state is remembered across launches
-- **Usage History** — a 4-hour timeline of CPU and RAM with a scrubber; pick any moment to see which processes were heaviest then. Open it from the menu bar
+- **Usage History** — up to 12 hours of CPU and RAM history with a 1h/4h/12h range switch and a scrubber; pick any moment to see which processes were heaviest then. Open it from the menu bar
 - **Menu bar metrics** — show live CPU, memory, and CPU temperature in the menu bar (each toggleable). Values turn yellow past 60% and red past 85%, and stay live even while the widget is hidden
 - Settings in the menu bar: background opacity, visible sections, refresh rate (1/2/5 s), font size and style (monospaced or system)
 - Launch at login toggle; no Dock icon

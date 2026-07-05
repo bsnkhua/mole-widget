@@ -8,15 +8,47 @@ public struct UsageHistoryView: View {
     let history: UsageHistoryStore
 
     @State private var selectedDate: Date?
+    @State private var range: TimeRange = .fourHours
 
     public init(history: UsageHistoryStore) {
         self.history = history
     }
 
+    /// How far back the chart shows. Retention is 12 h; narrowing the view
+    /// spreads points out so peaks are easy to scrub to.
+    private enum TimeRange: String, CaseIterable, Identifiable {
+        case oneHour = "1h", fourHours = "4h", twelveHours = "12h"
+        var id: String { rawValue }
+        var seconds: TimeInterval {
+            switch self {
+            case .oneHour: 3_600
+            case .fourHours: 14_400
+            case .twelveHours: 43_200
+            }
+        }
+    }
+
+    /// Samples within the selected range, anchored to the newest sample so an
+    /// idle gap doesn't push everything off the right edge.
+    private var visibleSamples: [UsageSample] {
+        guard let last = history.samples.last else { return [] }
+        let cutoff = last.timestamp.addingTimeInterval(-range.seconds)
+        return history.samples.filter { $0.timestamp >= cutoff }
+    }
+
     public var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Usage History")
-                .font(.headline)
+            HStack {
+                Text("Usage History")
+                    .font(.headline)
+                Spacer()
+                Picker("Range", selection: $range) {
+                    ForEach(TimeRange.allCases) { Text($0.rawValue).tag($0) }
+                }
+                .pickerStyle(.segmented)
+                .fixedSize()
+                .labelsHidden()
+            }
 
             if history.samples.count < 2 {
                 Spacer()
@@ -35,7 +67,7 @@ public struct UsageHistoryView: View {
 
     private var chart: some View {
         Chart {
-            ForEach(history.samples) { sample in
+            ForEach(visibleSamples) { sample in
                 LineMark(
                     x: .value("Time", sample.timestamp),
                     y: .value("Usage", sample.cpuFraction * 100),
@@ -43,7 +75,7 @@ public struct UsageHistoryView: View {
                 )
                 .foregroundStyle(Theme.accent)
             }
-            ForEach(history.samples) { sample in
+            ForEach(visibleSamples) { sample in
                 LineMark(
                     x: .value("Time", sample.timestamp),
                     y: .value("Usage", sample.memFraction * 100),
@@ -66,8 +98,8 @@ public struct UsageHistoryView: View {
     @ViewBuilder
     private var detailPane: some View {
         let selected = selectedDate.flatMap {
-            UsageHistoryMath.nearestSample(in: history.samples, to: $0)
-        } ?? history.samples.last
+            UsageHistoryMath.nearestSample(in: visibleSamples, to: $0)
+        } ?? visibleSamples.last
 
         if let sample = selected {
             VStack(alignment: .leading, spacing: 6) {
