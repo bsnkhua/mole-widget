@@ -28,6 +28,11 @@ struct MoleWidgetApp: App {
     @AppStorage(WidgetSettings.fontStyleKey)
     private var fontStyle = WidgetSettings.FontStyle.monospaced.rawValue
 
+    // Settings: menu bar metrics
+    @AppStorage(WidgetSettings.menuBarShowCPUKey)    private var menuBarShowCPU    = false
+    @AppStorage(WidgetSettings.menuBarShowMemoryKey) private var menuBarShowMemory = false
+    @AppStorage(WidgetSettings.menuBarShowTempKey)   private var menuBarShowTemp   = false
+
     // Settings: section visibility
     @AppStorage(WidgetSettings.showHeaderKey)    private var showHeader    = true
     @AppStorage(WidgetSettings.showCPUKey)       private var showCPU       = true
@@ -99,6 +104,11 @@ struct MoleWidgetApp: App {
                     Text("Monospaced").tag(WidgetSettings.FontStyle.monospaced.rawValue)
                     Text("System").tag(WidgetSettings.FontStyle.system.rawValue)
                 }
+                Menu("Menu bar metrics") {
+                    Toggle("CPU",     isOn: $menuBarShowCPU)
+                    Toggle("Memory",  isOn: $menuBarShowMemory)
+                    Toggle("Battery temperature", isOn: $menuBarShowTemp)
+                }
                 Menu("Sections") {
                     Toggle("Header",    isOn: $showHeader)
                     Toggle("CPU",       isOn: $showCPU)
@@ -115,7 +125,35 @@ struct MoleWidgetApp: App {
             }
             .keyboardShortcut("q")
         } label: {
-            Image(nsImage: Self.menuBarIcon)
+            MenuBarLabel(store: appDelegate.store, icon: Self.menuBarIcon)
+        }
+    }
+}
+
+/// Menu bar label: shows live metric text when any metric toggle is on and
+/// data is available, otherwise the static template icon. Reading the
+/// `@Observable` store's properties in `body` subscribes this view to the
+/// fast-timer updates, so the text refreshes on every sample.
+private struct MenuBarLabel: View {
+    let store: MetricsStore
+    let icon: NSImage
+
+    @AppStorage(WidgetSettings.menuBarShowCPUKey)    private var showCPU    = false
+    @AppStorage(WidgetSettings.menuBarShowMemoryKey) private var showMemory = false
+    @AppStorage(WidgetSettings.menuBarShowTempKey)   private var showTemp   = false
+
+    var body: some View {
+        if let text = MenuBarText.compose(
+            cpuFraction: store.cpu?.totalUsage,
+            memUsedBytes: store.memory?.used,
+            batteryTempC: store.power?.temperatureCelsius,
+            showCPU: showCPU,
+            showMemory: showMemory,
+            showTemp: showTemp
+        ) {
+            Text(text).monospacedDigit()
+        } else {
+            Image(nsImage: icon)
         }
     }
 }

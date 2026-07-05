@@ -59,6 +59,14 @@ public enum WidgetSettings {
         raw.flatMap(FontStyle.init(rawValue:)) ?? .monospaced
     }
 
+    // MARK: - Menu bar metrics
+
+    /// Live metrics shown as text in the menu bar. All default off — a fresh
+    /// install keeps the plain icon until the user opts in.
+    public static let menuBarShowCPUKey    = "menuBarShowCPU"
+    public static let menuBarShowMemoryKey = "menuBarShowMemory"
+    public static let menuBarShowTempKey   = "menuBarShowTemp"
+
     // MARK: - Section visibility
 
     public static let showHeaderKey    = "showHeader"
