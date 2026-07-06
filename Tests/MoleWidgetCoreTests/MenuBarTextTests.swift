@@ -54,23 +54,6 @@ import Testing
         )) == ["CPU 0%"])
     }
 
-    @Test func level_thresholds() {
-        #expect(MenuBarLevel.of(0.0) == .normal)
-        #expect(MenuBarLevel.of(0.59) == .normal)
-        #expect(MenuBarLevel.of(0.6) == .warning)
-        #expect(MenuBarLevel.of(0.84) == .warning)
-        #expect(MenuBarLevel.of(0.85) == .danger)
-        #expect(MenuBarLevel.of(1.0) == .danger)
-    }
-
-    @Test func metricsCarryLevel() {
-        let m = MenuBarText.metrics(
-            cpuFraction: 0.3, memFraction: 0.9, temperatureC: 70,
-            showCPU: true, showMemory: true, showTemp: true
-        )
-        #expect(m.map(\.level) == [.normal, .danger, .warning])  // 30% / 90% / 70°(0.70)
-    }
-
     @Test func tempOnly_rounds() {
         #expect(pairs(MenuBarText.metrics(
             cpuFraction: nil, memFraction: nil, temperatureC: 30.6,

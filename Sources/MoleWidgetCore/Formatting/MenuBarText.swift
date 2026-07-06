@@ -1,31 +1,14 @@
 import Foundation
 
-/// Severity of a menu bar value, used to color it (matches the widget bars:
-/// green/neutral below 60 %, yellow below 85 %, red above).
-public enum MenuBarLevel: Equatable {
-    case normal, warning, danger
-
-    /// Same thresholds as `Theme.barColor(for:)`.
-    public static func of(_ fraction: Double) -> MenuBarLevel {
-        switch fraction {
-        case ..<0.6: .normal
-        case ..<0.85: .warning
-        default: .danger
-        }
-    }
-}
-
 /// One menu bar metric: a short label and its formatted value, rendered as a
 /// two-line column (label on top, value below) to save horizontal space.
 public struct MenuBarMetric: Equatable {
     public let label: String
     public let value: String
-    public let level: MenuBarLevel
 
-    public init(label: String, value: String, level: MenuBarLevel) {
+    public init(label: String, value: String) {
         self.label = label
         self.value = value
-        self.level = level
     }
 }
 
@@ -51,13 +34,13 @@ public enum MenuBarText {
     ) -> [MenuBarMetric] {
         var result: [MenuBarMetric] = []
         if showCPU, let cpuFraction {
-            result.append(MenuBarMetric(label: "CPU", value: percent(cpuFraction), level: .of(cpuFraction)))
+            result.append(MenuBarMetric(label: "CPU", value: percent(cpuFraction)))
         }
         if showMemory, let memFraction {
-            result.append(MenuBarMetric(label: "MEM", value: percent(memFraction), level: .of(memFraction)))
+            result.append(MenuBarMetric(label: "MEM", value: percent(memFraction)))
         }
         if showTemp, let temperatureC {
-            result.append(MenuBarMetric(label: "TEMP", value: degrees(temperatureC), level: .of(temperatureC / 100)))
+            result.append(MenuBarMetric(label: "TEMP", value: degrees(temperatureC)))
         }
         return result
     }
