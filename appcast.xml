@@ -6,16 +6,16 @@
         <description>System monitor desktop widget for macOS</description>
         <language>en</language>
         <item>
-            <title>Mole Widget 0.8.1</title>
-            <pubDate>Sun, 05 Jul 2026 18:48:13 +0000</pubDate>
-            <sparkle:version>18</sparkle:version>
-            <sparkle:shortVersionString>0.8.1</sparkle:shortVersionString>
+            <title>Mole Widget 0.8.2</title>
+            <pubDate>Mon, 06 Jul 2026 15:11:44 +0000</pubDate>
+            <sparkle:version>19</sparkle:version>
+            <sparkle:shortVersionString>0.8.2</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <enclosure
-                url="https://github.com/TadelUnso/mole-widget/releases/download/v0.8.1/MoleWidget.dmg"
-                length="1752007"
+                url="https://github.com/TadelUnso/mole-widget/releases/download/v0.8.2/MoleWidget.dmg"
+                length="1755301"
                 type="application/octet-stream"
-                sparkle:edSignature="pBqKcuRMsXp4e+BtdtBhCeiEe/Rc/750GJZzppBfefZ4StHY4DkUrHTyYOfq4YPrtlEzLbTH3Lk2kMeP1pJTBA=="
+                sparkle:edSignature="Z7fYQbgx3lh880fQPL+lG+vx4mtxk8f5t1NlDjk3qnhxsUgXEJObwgf+bjcDJtyw3HzsAfEPB76WiJPbX94zDA=="
             />
         </item>
     </channel>
