@@ -68,13 +68,20 @@ public enum WidgetSettings {
     /// Live metrics shown as text in the menu bar. All on by default so the menu
     /// bar shows a full readout out of the box; a metric with no data (e.g.
     /// battery temperature on a desktop Mac) is simply omitted from the text.
-    public static let menuBarShowCPUKey    = "menuBarShowCPU"
-    public static let menuBarShowMemoryKey = "menuBarShowMemory"
-    public static let menuBarShowTempKey   = "menuBarShowTemp"
+    public static let menuBarShowCPUKey     = "menuBarShowCPU"
+    public static let menuBarShowMemoryKey  = "menuBarShowMemory"
+    public static let menuBarShowTempKey    = "menuBarShowTemp"
+    public static let menuBarShowNetworkKey = "menuBarShowNetwork"
+    public static let menuBarShowDiskKey    = "menuBarShowDisk"
 
-    public static let defaultMenuBarShowCPU    = true
-    public static let defaultMenuBarShowMemory = true
-    public static let defaultMenuBarShowTemp   = true
+    // CPU/Memory/Temp on by default (the built-in readout); the rest are
+    // opt-in so the menu bar stays compact until the user asks for more.
+    // Network/Disk each show both directions stacked in one column.
+    public static let defaultMenuBarShowCPU     = true
+    public static let defaultMenuBarShowMemory  = true
+    public static let defaultMenuBarShowTemp    = true
+    public static let defaultMenuBarShowNetwork = false
+    public static let defaultMenuBarShowDisk    = false
 
     // MARK: - Section visibility
 

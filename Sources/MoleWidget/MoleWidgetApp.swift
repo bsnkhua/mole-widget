@@ -29,9 +29,11 @@ struct MoleWidgetApp: App {
     private var fontStyle = WidgetSettings.defaultFontStyle.rawValue
 
     // Settings: menu bar metrics
-    @AppStorage(WidgetSettings.menuBarShowCPUKey)    private var menuBarShowCPU    = WidgetSettings.defaultMenuBarShowCPU
-    @AppStorage(WidgetSettings.menuBarShowMemoryKey) private var menuBarShowMemory = WidgetSettings.defaultMenuBarShowMemory
-    @AppStorage(WidgetSettings.menuBarShowTempKey)   private var menuBarShowTemp   = WidgetSettings.defaultMenuBarShowTemp
+    @AppStorage(WidgetSettings.menuBarShowCPUKey)     private var menuBarShowCPU     = WidgetSettings.defaultMenuBarShowCPU
+    @AppStorage(WidgetSettings.menuBarShowMemoryKey)  private var menuBarShowMemory  = WidgetSettings.defaultMenuBarShowMemory
+    @AppStorage(WidgetSettings.menuBarShowTempKey)    private var menuBarShowTemp    = WidgetSettings.defaultMenuBarShowTemp
+    @AppStorage(WidgetSettings.menuBarShowNetworkKey) private var menuBarShowNetwork = WidgetSettings.defaultMenuBarShowNetwork
+    @AppStorage(WidgetSettings.menuBarShowDiskKey)    private var menuBarShowDisk    = WidgetSettings.defaultMenuBarShowDisk
 
     // Settings: section visibility
     @AppStorage(WidgetSettings.showHeaderKey)    private var showHeader    = true
@@ -109,6 +111,8 @@ struct MoleWidgetApp: App {
                     Toggle("CPU",     isOn: $menuBarShowCPU)
                     Toggle("Memory",  isOn: $menuBarShowMemory)
                     Toggle("CPU temperature", isOn: $menuBarShowTemp)
+                    Toggle("Network", isOn: $menuBarShowNetwork)
+                    Toggle("Disk",    isOn: $menuBarShowDisk)
                 }
                 Menu("Sections") {
                     Toggle("Header",    isOn: $showHeader)
@@ -158,19 +162,31 @@ private struct MenuBarLabel: View {
     let store: MetricsStore
     let icon: NSImage
 
-    @AppStorage(WidgetSettings.menuBarShowCPUKey)    private var showCPU    = WidgetSettings.defaultMenuBarShowCPU
-    @AppStorage(WidgetSettings.menuBarShowMemoryKey) private var showMemory = WidgetSettings.defaultMenuBarShowMemory
-    @AppStorage(WidgetSettings.menuBarShowTempKey)   private var showTemp   = WidgetSettings.defaultMenuBarShowTemp
+    @AppStorage(WidgetSettings.menuBarShowCPUKey)     private var showCPU     = WidgetSettings.defaultMenuBarShowCPU
+    @AppStorage(WidgetSettings.menuBarShowMemoryKey)  private var showMemory  = WidgetSettings.defaultMenuBarShowMemory
+    @AppStorage(WidgetSettings.menuBarShowTempKey)    private var showTemp    = WidgetSettings.defaultMenuBarShowTemp
+    @AppStorage(WidgetSettings.menuBarShowNetworkKey) private var showNetwork = WidgetSettings.defaultMenuBarShowNetwork
+    @AppStorage(WidgetSettings.menuBarShowDiskKey)    private var showDisk    = WidgetSettings.defaultMenuBarShowDisk
 
     var body: some View {
-        let metrics = MenuBarText.metrics(
+        let values = MenuBarValues(
             cpuFraction: store.cpu?.totalUsage,
             memFraction: store.memory?.usedFraction,
             temperatureC: store.cpuTemperature,
-            showCPU: showCPU,
-            showMemory: showMemory,
-            showTemp: showTemp
+            netDownBytesPerSec: store.netRates?.download,
+            netUpBytesPerSec: store.netRates?.upload,
+            diskReadBytesPerSec: store.diskIO?.read,
+            diskWriteBytesPerSec: store.diskIO?.write
         )
+        let metrics = MenuBarText.metrics(values) { kind in
+            switch kind {
+            case .cpu:     return showCPU
+            case .memory:  return showMemory
+            case .temp:    return showTemp
+            case .network: return showNetwork
+            case .disk:    return showDisk
+            }
+        }
         // MenuBarExtra squeezes a custom SwiftUI label to one line and clips its
         // width, so the two-line layout is rendered into an NSImage instead —
         // the menu bar renders images at full size reliably.
@@ -178,8 +194,10 @@ private struct MenuBarLabel: View {
     }
 
     /// Draws the metrics into a template image that macOS tints for the menu
-    /// bar. Each metric is a column with a small label on top and a larger value
-    /// below, centered against each other; columns are separated by a fixed gap.
+    /// bar. A normal metric is a column with a small label on top and a larger
+    /// value below; a `stacked` metric (network/disk) draws both of its lines at
+    /// one mid size so the two directions read as equal rows. Columns are
+    /// separated by a fixed gap.
     ///
     /// Rows are packed to cap height (no ascender/descender whitespace) so that
     /// when the image is scaled to the menu bar thickness the glyphs render as
@@ -187,32 +205,39 @@ private struct MenuBarLabel: View {
     private static func image(for metrics: [MenuBarMetric]) -> NSImage {
         let labelFont = NSFont.monospacedSystemFont(ofSize: 10, weight: .medium)
         let valueFont = NSFont.monospacedSystemFont(ofSize: 14, weight: .semibold)
+        let stackFont = NSFont.monospacedSystemFont(ofSize: 11, weight: .semibold)
         // Drawn opaque (black); the image is a template (see below) so macOS
         // ignores the hue and tints the glyphs to match the menu bar itself —
         // flipping between dark and light to stay legible against the wallpaper
         // behind the translucent bar, exactly like the clock and Wi-Fi icons.
-        let labelAttrs: [NSAttributedString.Key: Any] = [.font: labelFont, .foregroundColor: NSColor.black]
-        let valueAttrs: [NSAttributedString.Key: Any] = [.font: valueFont, .foregroundColor: NSColor.black]
+        func attrs(_ font: NSFont) -> [NSAttributedString.Key: Any] {
+            [.font: font, .foregroundColor: NSColor.black]
+        }
 
-        let cells = metrics.map { metric -> (label: NSAttributedString, value: NSAttributedString, width: CGFloat) in
-            let label = NSAttributedString(string: metric.label, attributes: labelAttrs)
-            let value = NSAttributedString(string: metric.value, attributes: valueAttrs)
-            return (label, value, ceil(max(label.size().width, value.size().width)))
+        let cells = metrics.map { metric -> (top: NSAttributedString, bottom: NSAttributedString, topFont: NSFont, bottomFont: NSFont, width: CGFloat) in
+            let topFont = metric.stacked ? stackFont : labelFont
+            let bottomFont = metric.stacked ? stackFont : valueFont
+            let top = NSAttributedString(string: metric.label, attributes: attrs(topFont))
+            let bottom = NSAttributedString(string: metric.value, attributes: attrs(bottomFont))
+            return (top, bottom, topFont, bottomFont, ceil(max(top.size().width, bottom.size().width)))
         }
 
         let columnGap: CGFloat = 16
         let rowGap: CGFloat = 3
         let vPad: CGFloat = 2  // breathing room so cap tops/bottoms aren't clipped
+        // Shared row bands so mixed normal/stacked columns stay aligned.
+        let bottomCap = cells.map { $0.bottomFont.capHeight }.max() ?? valueFont.capHeight
+        let topCap = cells.map { $0.topFont.capHeight }.max() ?? labelFont.capHeight
         let width = cells.reduce(0) { $0 + $1.width } + columnGap * CGFloat(max(0, cells.count - 1))
-        let height = ceil(valueFont.capHeight + rowGap + labelFont.capHeight + vPad * 2)
-        let valueY = valueFont.descender + vPad                       // value caps at [vPad, vPad+cap]
-        let labelY = valueFont.capHeight + rowGap + labelFont.descender + vPad
+        let height = ceil(bottomCap + rowGap + topCap + vPad * 2)
+        let bottomBaseline = vPad                       // bottom caps at [vPad, vPad+bottomCap]
+        let topBaseline = bottomCap + rowGap + vPad     // top row sits above the bottom row
 
         let image = NSImage(size: NSSize(width: width, height: height), flipped: false) { _ in
             var x: CGFloat = 0
             for cell in cells {
-                cell.value.draw(at: NSPoint(x: x, y: valueY))
-                cell.label.draw(at: NSPoint(x: x, y: labelY))
+                cell.bottom.draw(at: NSPoint(x: x, y: bottomBaseline + cell.bottomFont.descender))
+                cell.top.draw(at: NSPoint(x: x, y: topBaseline + cell.topFont.descender))
                 x += cell.width + columnGap
             }
             return true

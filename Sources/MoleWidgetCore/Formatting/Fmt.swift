@@ -31,6 +31,11 @@ public enum Fmt {
         rateNumber(bytesPerSecond) + " MB/s"
     }
 
+    /// Compact throughput for the tight menu bar column: "0.5M", "150M" (MB/s).
+    public static func rateCompact(_ bytesPerSecond: Double) -> String {
+        rateNumber(bytesPerSecond) + "M"
+    }
+
     /// Disk read/write speeds: "R 0.1 · W 0.5 MB/s"
     public static func readWritePair(read: Double, write: Double) -> String {
         "R \(rateNumber(read)) · W \(rateNumber(write)) MB/s"

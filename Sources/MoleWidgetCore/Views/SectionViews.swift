@@ -18,7 +18,7 @@ public struct CPUSectionView: View, Equatable {
                 if let temperature {
                     MetricRow(
                         label: "Temp",
-                        fraction: temperature / 100,
+                        fraction: min(temperature / 100, 1.0),
                         value: String(format: "%.0f°C", temperature)
                     )
                 }

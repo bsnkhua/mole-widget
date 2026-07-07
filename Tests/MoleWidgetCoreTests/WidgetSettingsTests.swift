@@ -56,6 +56,15 @@ import Testing
         #expect(WidgetSettings.resolveFontStyle("") == .system)
     }
 
+    @Test func menuBarMetricDefaults_classicThreeOnRestOff() {
+        // CPU/Memory/Temp ship on; network and disk are opt-in.
+        #expect(WidgetSettings.defaultMenuBarShowCPU)
+        #expect(WidgetSettings.defaultMenuBarShowMemory)
+        #expect(WidgetSettings.defaultMenuBarShowTemp)
+        #expect(!WidgetSettings.defaultMenuBarShowNetwork)
+        #expect(!WidgetSettings.defaultMenuBarShowDisk)
+    }
+
     @Test func isVisible_absentKey_defaultsToVisible() {
         let suite = "WidgetSettingsTests.isVisible_absent"
         let defaults = UserDefaults(suiteName: suite)!

@@ -31,6 +31,13 @@ import Testing
         #expect(Fmt.rate(47_185_920) == "45.0 MB/s") // mid range
     }
 
+    @Test func rateCompact() {
+        #expect(Fmt.rateCompact(524_288) == "0.5M")
+        #expect(Fmt.rateCompact(0) == "0.0M")
+        #expect(Fmt.rateCompact(157_286_400) == "150M") // >= 100 MB/s — no fractional part
+        #expect(Fmt.rateCompact(-1_048_576) == "0.0M")  // negative delta → 0
+    }
+
     @Test func usedFreePair() {
         // ≥ 10 GiB — no fractional part (mo style: "164G")
         #expect(Fmt.usedFreePair(used: 175_973_534_106, free: 318_372_188_979) == "164G used · 297G free")

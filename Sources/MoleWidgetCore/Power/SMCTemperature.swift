@@ -7,8 +7,8 @@ import IOKit
 /// `Tp…` family (`Tg…` is GPU, `Tm…` is memory). The specific sub-codes differ
 /// every generation (M1 `Tp01/Tp05…`, M5 `Tp0X/Tp0O…`), so instead of a
 /// hardcoded per-generation table this scans the SMC key list once, keeps every
-/// `Tp…` sensor that reports a plausible temperature, and averages them. Absent
-/// families (Intel Macs, sandboxed processes) simply yield `nil`.
+/// `Tp…` sensor that reports a plausible temperature, and takes their median.
+/// Absent families (Intel Macs, sandboxed processes) simply yield `nil`.
 ///
 /// No root or entitlement is required — a read-only `AppleSMC` connection is
 /// enough. Being a private API, it rules out App Store sandboxing, which does
@@ -28,7 +28,7 @@ public final class SMCTemperature {
         if connection != 0 { IOServiceClose(connection) }
     }
 
-    /// Average of all `Tp…` core sensors, in °C, or `nil` when unavailable.
+    /// Median of all `Tp…` core sensors, in °C, or `nil` when unavailable.
     public func cpuTemperature() -> Double? {
         guard connection != 0 else { return nil }
 
@@ -36,15 +36,31 @@ public final class SMCTemperature {
         cpuKeys = keys
         guard !keys.isEmpty else { return nil }
 
-        var sum = 0.0
-        var count = 0
-        for key in keys {
-            if let value = readFloat(key), value > 0, value < 130 {
-                sum += Double(value)
-                count += 1
-            }
+        let values = keys.compactMap { key -> Float? in
+            guard let value = readFloat(key), value > 0, value < 130 else { return nil }
+            return value
         }
-        return count > 0 ? sum / Double(count) : nil
+        return Self.aggregate(values)
+    }
+
+    /// A real die temperature stays around this even under sustained load;
+    /// a median above it means the sensor set is unreliable, so we report `nil`.
+    static let plausibleCeiling: Double = 110
+
+    /// Robust central temperature from the collected core sensors, in °C, or `nil`.
+    ///
+    /// Uses the median rather than the mean so a single misreporting `Tp…`
+    /// sensor — which the broad 0–130°C per-sensor filter can let through — can't
+    /// drag the figure above the real die temperature. As a final guard, an
+    /// implausibly hot median (`> plausibleCeiling`) is dropped as unreliable.
+    static func aggregate(_ values: [Float]) -> Double? {
+        guard !values.isEmpty else { return nil }
+        let sorted = values.sorted()
+        let mid = sorted.count / 2
+        let median = sorted.count.isMultiple(of: 2)
+            ? (Double(sorted[mid - 1]) + Double(sorted[mid])) / 2
+            : Double(sorted[mid])
+        return median <= plausibleCeiling ? median : nil
     }
 
     /// One-time scan of the whole key list, collecting `Tp…` float sensors that
