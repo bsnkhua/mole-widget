@@ -47,15 +47,12 @@ The app is signed and notarized — Gatekeeper will not block it.
 ### Homebrew
 
 ```bash
-brew install TadelUnso/tap/mole-widget
-mole-widget   # launch the widget
+brew install --cask TadelUnso/tap/mole-widget
 ```
 
-The formula builds the widget from source on your machine (~30 s; needs only
-the Command Line Tools that Homebrew already requires). Because the app is
-built locally, Gatekeeper has no objections to the unsigned bundle.
-
-Quit it any time from the menu bar icon → **Quit Mole Widget**.
+The cask downloads the signed, notarized DMG from GitHub Releases and installs
+**Mole Widget.app** into `/Applications`. Launch it from Spotlight, Launchpad,
+or Applications; quit any time from the menu bar icon → **Quit Mole Widget**.
 
 ### From source
 
@@ -72,15 +69,9 @@ when a new signed release is available, offers to download and install it in
 place. You can also check on demand from the menu bar icon → **Check for
 Updates…**.
 
-If you installed via **Homebrew**, update through brew instead:
-
-```bash
-brew update && brew upgrade mole-widget && (pkill -f "Mole Widget.app"; sleep 1; mole-widget)
-```
-
-(`brew update` first — third-party taps refresh only during a full update.
-The trailing part restarts the widget: brew replaces the files on disk, but
-the old version keeps running until relaunched.)
+If you installed via **Homebrew**, the widget still updates itself through
+Sparkle — the same way as the DMG install. The cask declares `auto_updates true`,
+so Homebrew defers to Sparkle and there is no separate `brew upgrade` step.
 
 ## Uninstall
 
@@ -88,7 +79,7 @@ the old version keeps running until relaunched.)
 2. Remove the package:
 
 ```bash
-brew uninstall mole-widget
+brew uninstall --cask mole-widget
 ```
 
 3. Optional cleanup — remove the tap and the saved settings:
